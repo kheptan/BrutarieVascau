@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+
+    tools:context="com.example.kp.brutarievascau.ClientNou"
+    android:transcriptMode="alwaysScroll" >
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:weightSum="1">
+
+    <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="570dp"
+    android:paddingBottom="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="16dp">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Denumire"
+        android:id="@+id/textView4"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editNume"
+        android:layout_below="@+id/textView4"
+        android:layout_alignParentStart="true"
+        android:maxLength="30"
+        android:maxLines="1"
+        android:lines="1"
+        android:singleLine="true"
+        android:autoText="false"
+        android:focusable="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Adresa"
+        android:id="@+id/textView5"
+        android:layout_below="@+id/editNume"
+        android:layout_alignStart="@+id/editNume" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editAdresa"
+        android:layout_below="@+id/textView5"
+        android:layout_alignParentStart="true"
+        android:maxLines="1"
+        android:maxLength="45"
+        android:singleLine="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="CIF"
+        android:id="@+id/textView6"
+        android:layout_below="@+id/editAdresa"
+        android:layout_alignStart="@+id/editAdresa" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editCif"
+        android:layout_below="@+id/textView6"
+        android:layout_alignStart="@+id/textView6"
+        android:maxLines="1"
+        android:maxLength="40"
+        android:singleLine="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Nr Reg Comert"
+        android:id="@+id/textView7"
+        android:layout_below="@+id/editCif"
+        android:layout_alignStart="@+id/editCif" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editNrRegCom"
+        android:layout_below="@+id/textView7"
+        android:layout_alignStart="@+id/textView7"
+        android:maxLength="50"
+        android:maxLines="1"
+        android:singleLine="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Cont IBAN"
+        android:id="@+id/textView8"
+        android:layout_below="@+id/editNrRegCom"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editIban"
+        android:layout_below="@+id/textView8"
+        android:layout_alignParentStart="true"
+        android:maxLines="1"
+        android:maxLength="50"
+        android:singleLine="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Alte Informatii"
+        android:id="@+id/textView9"
+        android:layout_below="@+id/editIban"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:id="@+id/editInfo"
+        android:layout_below="@+id/textView9"
+        android:layout_toEndOf="@+id/textView6"
+        android:layout_alignParentStart="true"
+        android:maxLines="2"
+        android:maxLength="100"
+        android:maxHeight="60dp"
+        android:singleLine="true" />
+
+        <Button
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Adaua Client"
+            android:id="@+id/buttonAddClient"
+            android:background="#81e374"
+            android:layout_marginTop="30dp"
+            android:layout_below="@+id/editInfo"
+            android:layout_alignParentStart="true"
+            android:onClick="insertClientDB"/>
+
+        <Button
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Renunta"
+            android:id="@+id/buttonExit"
+            android:background="#fb6f6f"
+            android:layout_alignTop="@+id/buttonAddClient"
+            android:layout_alignEnd="@+id/editInfo" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Importa Clienti Xml"
+            android:id="@+id/buttonImportClientXml"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/textView4" />
+    </RelativeLayout>
+    </LinearLayout>
+</ScrollView>
+

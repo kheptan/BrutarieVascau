@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="450dp">
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Salveaza Produs"
+        android:id="@+id/buttonAddProdusebtn"
+        android:layout_gravity="center_vertical"
+        android:layout_above="@+id/buttonexitFragmentProduse"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/codProdusFrg"
+        android:layout_marginTop="59dp"
+        android:singleLine="true"
+        android:maxLines="1"
+        android:maxLength="20"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:hint="Cod Produs" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/denumireProdusFrg"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:maxLength="40"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:layout_below="@+id/codProdusFrg"
+        android:hint="Denumire" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Iesire"
+        android:id="@+id/buttonexitFragmentProduse"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number|numberDecimal"
+        android:ems="10"
+        android:id="@+id/PretProdusFrg"
+        android:layout_below="@+id/denumireProdusFrg"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:hint="Pret" />
+
+</RelativeLayout>
