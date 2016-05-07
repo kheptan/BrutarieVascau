@@ -18,7 +18,7 @@
         android:background="#8ed851"
         android:onClick="ReplaceFragment"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -32,11 +32,20 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="450dp"
+        android:layout_height="wrap_content"
         android:id="@+id/AdaugaProduse"
-        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:clickable="false" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Importa"
+        android:id="@+id/btnImportProduse"
+        android:layout_above="@+id/buttonAddProduse"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/buttonAddProduse" />
 
 
 </RelativeLayout>

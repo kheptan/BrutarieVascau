@@ -2,6 +2,8 @@ package com.example.kp.brutarievascau;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -12,6 +14,7 @@ import android.support.v4.app.ListFragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +26,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -37,6 +49,17 @@ public class Produse extends AppCompatActivity
 
             TopProduse top = new TopProduse();
             Bundle bundle = new Bundle();
+            Button btnImport = (Button) findViewById(R.id.btnImportProduse);
+            btnImport.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        insertProduse();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
             FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -44,7 +67,124 @@ public class Produse extends AppCompatActivity
             fragmentTransaction.commit();
     }
 
+    private void insertProduse() throws IOException {
+        File file = null;
+        InputStream is = null;
+        try {
+            file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"produse.xml");
+            if(file!=null){
+                is = new BufferedInputStream(new FileInputStream(file));
+                new XmlAsync().execute(is);
+                //fisier importat cu succes
+            }
+        }catch (NullPointerException ex){
+            ex.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public class XmlAsync extends AsyncTask<InputStream, Void, List<CoduriProduse>> {
+        @Override
+        protected List<CoduriProduse> doInBackground(InputStream... params) {
+            List<CoduriProduse> allproduse = new ArrayList<CoduriProduse>();
+            try {
+                allproduse=parseXml(params[0]);
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return allproduse;
+        }
+
+        @Override
+        protected void onPostExecute(List<CoduriProduse> produse) {
+            super.onPostExecute(produse);
+            if(produse.size()>0){
+                DBhelper prDB = new DBhelper(getBaseContext());
+                prDB.openDB();
+                for(CoduriProduse item: produse){
+                    prDB.addProdus(item);
+                }
+                //Toast.makeText(getApplicationContext(), "e mai mare"+clients.size(), Toast.LENGTH_SHORT).show();
+                prDB.closeDB();
+            }
+        }
+    }
+
+    private List<CoduriProduse> parseXml(InputStream file) throws XmlPullParserException, IOException {
+        final String ns = null;
+        List<CoduriProduse> produse=null;
+
+        try {
+            XmlPullParser parser = Xml.newPullParser();
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+            parser.setInput(file, null);
+            parser.nextTag();
+
+            produse = new ArrayList<CoduriProduse>();
+            parser.require(XmlPullParser.START_TAG, ns, "VFPData");
+
+            while (parser.next() != XmlPullParser.END_TAG) {
+                if (parser.getEventType() != XmlPullParser.START_TAG) {
+                    continue;
+                }
+                String name = parser.getName();
+
+                if (name.equals("c_xml")) {
+                    CoduriProduse cp = new CoduriProduse();
+                    //Client client = new Client();
+                    /** READ */
+                    parser.require(XmlPullParser.START_TAG, ns, "c_xml");
+                    while (parser.next() != XmlPullParser.END_TAG) {
+                        if (parser.getEventType() != XmlPullParser.START_TAG) {
+                            continue;
+                        }
+                        String subname = parser.getName();
+                        if (subname.equals("cod")) {
+                            if (parser.next() == XmlPullParser.TEXT) {
+                                cp.setPr_codprodus(parser.getText());
+                                parser.nextTag();
+                            }
+                        } else if (subname.equals("denumire")) {
+                            if (parser.next() == XmlPullParser.TEXT) {
+                                cp.setPr_denumire(parser.getText());
+                                parser.nextTag();
+                            }
+                        } else {
+                            skip(parser);
+                        }
+                    }
+
+                    produse.add(cp);
+                    //skip(parser);
+                } else {
+                    skip(parser);
+                }
+            }
+        }catch (XmlPullParserException ex){
+            ex.printStackTrace();
+        }
+        return produse;
+    }
+
+    private void skip(XmlPullParser xpp) throws XmlPullParserException, IOException {
+        if (xpp.getEventType() != XmlPullParser.START_TAG) {
+            throw new IllegalStateException();
+        }
+        int depth = 1;
+        while (depth != 0) {
+            switch (xpp.next()) {
+                case XmlPullParser.END_TAG:
+                    depth--;
+                    break;
+                case XmlPullParser.START_TAG:
+                    depth++;
+                    break;
+            }
+        }
+    }
     /**
      *  Fragment 1  Lista Produse
      * */
@@ -162,7 +302,7 @@ public class Produse extends AppCompatActivity
                         EditText editPret = (EditText) getActivity().findViewById(R.id.PretProdusFrg);
                         d=Double.parseDouble(editPret.getText().toString().trim());
 
-                        cpr.setPr_codprodus(Integer.parseInt(editCodPr.getText().toString().trim()));
+                        cpr.setPr_codprodus(editCodPr.getText().toString().trim());
                         cpr.setPr_denumire(editDenumire.getText().toString().trim());
                         cpr.setPret(douaZeci(d));
                       Toast.makeText(getActivity(), " "+douaZeci(d) , Toast.LENGTH_SHORT).show();

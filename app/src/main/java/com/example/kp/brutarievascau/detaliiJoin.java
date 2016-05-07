@@ -10,6 +10,7 @@ public class detaliiJoin {
     int linie;
     int nrcomanda;
     int codprodus;
+    String cdProdus;
     String denumire_produs;
     int cantitate;
     double pret;
@@ -25,7 +26,7 @@ public class detaliiJoin {
     public void setPret(double pr)     { this.pret = pr; }
     public void setValoare(double vl)  { this.valoare = vl; }
     public void setTva(double tv)      { this.tva = tv; }
-
+    public void setCdProdus(String cprodus) { this.cdProdus = cprodus;}
 
     public int getLinie()       { return this.linie; }
     public int getNrcomanda()   { return this.nrcomanda; }
@@ -35,5 +36,6 @@ public class detaliiJoin {
     public double getPret()     { return this.pret; }
     public double getValoare()  { return this.valoare; }
     public double getTva()      { return this.tva; }
+    public String getCdProdus() { return this.cdProdus; }
 
 }

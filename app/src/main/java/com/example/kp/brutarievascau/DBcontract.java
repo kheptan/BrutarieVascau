@@ -13,7 +13,7 @@ public class DBcontract {
      public final static  String  TABLE_DETALII_COMANDA = "detalii_comanda";
      public final static  String  TABLE_MAGAZINE = "magazine";
      public final static  String  TABLE_USER = "user";
-
+     public final static  String  TABLE_EMAIL_COMENZI = "email_comenzi";
      // public key id //////////////////////////////////////////////////////////////
 
      public final static  String  KEY_ID = "_id";
@@ -45,8 +45,10 @@ public class DBcontract {
      public final static String KEY_DETALII_COMANDA_VALOARE = "valoare";
      public final static String KEY_DETALII_COMANDA_TVA = "tva";
 
-
-
+     // def. campuri email_comenzi
+     public final static String KEY_EMAIL_COMENZI_DATA_COMANDA = "data_comanda";
+     public final static String KEY_EMAIL_COMENZI_NR_COMANDA = "nr_comanda";
+     public final static String KEY_EMAIL_COMENZI_STARE_COMANDA = "stare_comanda";
      // def campuri magazin  ///////////////////////////////////////////////////////
 
      public final static String KEY_MAGAZINE_NUME = "nume";
@@ -72,7 +74,7 @@ public class DBcontract {
                     "IF NOT EXISTS " + TABLE_PRODUSE +
                     " ( " +
                           KEY_ID + " INTEGER PRIMARY KEY ASC AUTOINCREMENT, "+
-                          KEY_PRODUSE_COD_PRODUS + " INTEGER, " +
+                          KEY_PRODUSE_COD_PRODUS + " TEXT, " +
                           KEY_PRODUSE_NUME + " TEXT, " +
                           KEY_PRODUSE_PRET + " REAL "+" )";
 
@@ -94,13 +96,23 @@ public class DBcontract {
                      "IF NOT EXISTS " + TABLE_ANTET_COMANDA +
                      " (" +
                           KEY_ID + " INTEGER PRIMARY KEY ASC AUTOINCREMENT, "+
-                          KEY_ANTET_COMANDA_DATA_COMANDA + " TEXT, " +
+                          KEY_ANTET_COMANDA_DATA_COMANDA + " INTEGER, " +
                           KEY_ANTET_COMANDA_ID_CLIENT + " INTEGER, " +
                           KEY_ANTET_COMANDA_TVA + " REAL, " +
                           KEY_ANTET_COMANDA_GREUTATE + " INTEGER, " +
                           KEY_ANTET_COMANDA_NR_COMANDA + " INTEGER NOT NULL UNIQUE, " +
                           " FOREIGN KEY ("+ KEY_ANTET_COMANDA_ID_CLIENT + ")" +
                           " REFERENCES "+ TABLE_MAGAZINE + " (" + KEY_ID + "))";
+
+
+    public final static String CREATE_TABLE_EMAIL_COMENZI =
+            "CREATE TABLE " +
+                    "IF NOT EXISTS " + TABLE_EMAIL_COMENZI +
+                    " (" +
+                          KEY_ID + " INTEGER PRIMARY KEY ASC AUTOINCREMENT, " +
+                          KEY_EMAIL_COMENZI_DATA_COMANDA + " INTEGER, " +
+                          KEY_EMAIL_COMENZI_NR_COMANDA + " INTEGER, "+
+                          KEY_EMAIL_COMENZI_STARE_COMANDA + " INTEGER )";
 
 
     public final static String CREATE_TABLE_DETALII_COMANDA =

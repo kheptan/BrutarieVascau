@@ -21,18 +21,9 @@
         android:layout_height="wrap_content"
         android:text="Trimite Comanda"
         android:id="@+id/btnSendEmailCom"
+        android:background="#99e772"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:background="#99e772" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="B"
-        android:id="@+id/b"
-        android:layout_alignTop="@+id/btnSendEmailCom"
-        android:layout_alignEnd="@+id/listViewDetaliiComanda" />
+        android:layout_centerHorizontal="true" />
 
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"
@@ -43,4 +34,5 @@
         android:layout_alignBottom="@+id/listViewDetaliiComanda"
         android:layout_centerHorizontal="true"
         android:indeterminate="true" />
+
 </RelativeLayout>

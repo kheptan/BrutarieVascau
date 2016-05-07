@@ -46,8 +46,11 @@ public class ComandaNouaProdus extends AppCompatActivity  implements AdapterView
                   btnShowComanda = (Button) findViewById(R.id.viewdetailcomanda);
                   btnAdaugaProdus = (Button) findViewById(R.id.butonAddProdusSpiner);
                   btnSave = (Button) findViewById(R.id.savecomandspinner);
+                  Button btnSaveALL = (Button) findViewById(R.id.btnSaveAll);
+
                   List<AntetComanda> insertNrCom;
                   List<detaliiJoin> insertLinie;
+
 
 
                   EditText focusField = (EditText) findViewById(R.id.spinerfieldcantitate);
@@ -66,25 +69,25 @@ public class ComandaNouaProdus extends AppCompatActivity  implements AdapterView
                   insertNrCom = dBhelper.getAntet();
                        if (insertNrCom.isEmpty()) {
                              Calendar calendar = Calendar.getInstance();
-                             Date now = new Date(calendar.getTimeInMillis());
-                             final String formatdate = "dd.MM.yyy";
-                             SimpleDateFormat sdate = new SimpleDateFormat(formatdate);
+                             java.util.Date now = new java.util.Date(calendar.getTimeInMillis());
+                             //final String formatdate = "dd.MM.yyy";
+                             //SimpleDateFormat sdate = new SimpleDateFormat(formatdate);
                              //sdate.format(now);
                              antetObj = new AntetComanda();
                              antetObj.setNrCom(1);
-                             antetObj.setDataCom(sdate.format(now));
+                             antetObj.setDataCom(now.getTime());
                              antetObj.setClientCom(ClientId);
                              //Toast.makeText(getBaseContext(), "Prima comanda!!!", Toast.LENGTH_LONG).show();
                        }else{
                              Calendar calendar = Calendar.getInstance();
-                             Date now = new Date(calendar.getTimeInMillis());
-                             final String formatdate = "dd.MM.yyy";
-                             SimpleDateFormat sdate = new SimpleDateFormat(formatdate);
+                             java.util.Date now = new java.util.Date(calendar.getTimeInMillis());
+                             //final String formatdate = "dd.MM.yyy";
+                             //SimpleDateFormat sdate = new SimpleDateFormat(formatdate);
 
                              antetObj = new AntetComanda();
                              antetObj.setNrCom(insertNrCom.get(insertNrCom.size() - 1).getNrCom() + 1);
                              antetObj.setClientCom(ClientId);
-                             antetObj.setDataCom(sdate.format(now));
+                             antetObj.setDataCom(now.getTime());
                              //Toast.makeText(getBaseContext(), "Comanda Nr: " + antetObj.getNrCom() , Toast.LENGTH_LONG).show();
                        }
 
@@ -119,6 +122,13 @@ public class ComandaNouaProdus extends AppCompatActivity  implements AdapterView
                       }
                   });
 
+                  btnSaveALL.setOnClickListener(new View.OnClickListener() {
+                      @Override
+                      public void onClick(View v) {
+                          doSaveALl();
+                      }
+                  });
+
                   dBhelper.closeDB();
 
                   btnShowComanda.setOnClickListener(new View.OnClickListener() {
@@ -146,10 +156,24 @@ public class ComandaNouaProdus extends AppCompatActivity  implements AdapterView
                   });
           }
 
+    private void doSaveALl() {
+        DBhelper dBhelper = new DBhelper(getBaseContext());
+
+        if(antetObj!=null){
+            ComenziEmail comenzi = new ComenziEmail();
+            comenzi.setNrComanda(antetObj.getNrCom());
+            comenzi.setDataComanda(antetObj.getDataCom());
+            comenzi.setStare(0);
+
+            dBhelper.insertEmailComanda(comenzi);
+            dBhelper.closeDB();
+        }
+        //java.util.Date date = new java.util.Date();
+        //Toast.makeText(getBaseContext(), " format data " + date.getTime(), Toast.LENGTH_LONG).show();
+    }
 
 
-
-          public static class CustomSpinnerAdapter extends ArrayAdapter<CoduriProduse> implements SpinnerAdapter{
+    public static class CustomSpinnerAdapter extends ArrayAdapter<CoduriProduse> implements SpinnerAdapter{
                   Context ctx;
                   //List<CoduriProduse> lstProduse;
 
@@ -197,7 +221,7 @@ public class ComandaNouaProdus extends AppCompatActivity  implements AdapterView
                   position_selected = position;
 
                   itemSelected = (CoduriProduse)parent.getItemAtPosition(position);
-                  idProdus = itemSelected.getPr_codprodus();
+                  idProdus = itemSelected.getID();
                   EditText txtDen = (EditText) findViewById(R.id.SpinnerDenumireProdus);
                   EditText txtPret = (EditText) findViewById(R.id.SpinnerPretProduse);
                   EditText cantF = (EditText) findViewById(R.id.spinerfieldcantitate);

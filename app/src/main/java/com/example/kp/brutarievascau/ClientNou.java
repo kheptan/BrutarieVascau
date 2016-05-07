@@ -1,9 +1,10 @@
 package com.example.kp.brutarievascau;
 
-import android.graphics.Path;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Xml;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,14 +12,14 @@ import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientNou extends AppCompatActivity {
 
@@ -31,16 +32,23 @@ public class ClientNou extends AppCompatActivity {
         btnInsertXml.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                insertXmlClient();
+                try {
+                    insertXmlClient();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
 
-    private void insertXmlClient() {
-        File path = null;
+    private void insertXmlClient() throws IOException {
+        File file = null;
+        InputStream is = null;
         try {
-            path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"clienti.xml");
-            if(readPath(path)){
+            file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),"clienti.xml");
+            if(file!=null){
+                is = new BufferedInputStream(new FileInputStream(file));
+                new XmlAsync().execute(is);
                 //fisier importat cu succes
             }
         }catch (NullPointerException ex){
@@ -51,63 +59,91 @@ public class ClientNou extends AppCompatActivity {
     }
 
 
-
-    private boolean readPath(File path) throws IOException {
-        if(path!=null){
-            InputStream is = null;
-            try{
-                is = new BufferedInputStream( new FileInputStream(path));
-                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-                XmlPullParser xpp = factory.newPullParser();
-                xpp.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES,false);
-                xpp.setInput(is,null);
-                xpp.nextTag();
-                readFeed(xpp);
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+    public class XmlAsync extends AsyncTask<InputStream, Void, List<Client>> {
+        @Override
+        protected List<Client> doInBackground(InputStream... params) {
+            List<Client> allclient = new ArrayList<Client>();
+            try {
+                allclient=parseXml(params[0]);
             } catch (XmlPullParserException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                is.close();
             }
-            return true;
-        }else{
-            return false;
+            return allclient;
+        }
+
+        @Override
+        protected void onPostExecute(List<Client> clients) {
+            super.onPostExecute(clients);
+            if(clients.size()>0){
+                DBhelper clientDB = new DBhelper(getBaseContext());
+                clientDB.openDB();
+                for(Client item: clients){
+                    clientDB.addClient(item);
+                }
+                //Toast.makeText(getApplicationContext(), "e mai mare"+clients.size(), Toast.LENGTH_SHORT).show();
+                clientDB.closeDB();
+            }
         }
     }
 
-
-
-    private void readFeed(XmlPullParser xpp) throws XmlPullParserException {
-        Client client = new Client();
-        int eventType = xpp.getEventType();
-        int reverse =0;
+    private List<Client> parseXml(InputStream file) throws XmlPullParserException, IOException {
+        final String ns = null;
+        List<Client> clienti=null;
 
         try {
-            xpp.require(XmlPullParser.START_TAG,null,"VFPData");
-             while(xpp.next() != XmlPullParser.END_TAG){
-                 if(xpp.getEventType() != XmlPullParser.START_TAG){
-                     continue;
-                 }
-                 String name = xpp.getName();
-                 if(name.equals("c_xml")){
+            XmlPullParser parser = Xml.newPullParser();
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+            parser.setInput(file, null);
+            parser.nextTag();
 
-                     skip(xpp);
-                 }else {
-                      skip(xpp);  
-                 }
-             }
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            clienti = new ArrayList<Client>();
+            parser.require(XmlPullParser.START_TAG, ns, "VFPData");
+
+            while (parser.next() != XmlPullParser.END_TAG) {
+                if (parser.getEventType() != XmlPullParser.START_TAG) {
+                    continue;
+                }
+                String name = parser.getName();
+
+                if (name.equals("c_xml")) {
+                    Client client = new Client();
+                    /** READ */
+                    parser.require(XmlPullParser.START_TAG, ns, "c_xml");
+                    while (parser.next() != XmlPullParser.END_TAG) {
+                        if (parser.getEventType() != XmlPullParser.START_TAG) {
+                            continue;
+                        }
+                        String subname = parser.getName();
+                        if (subname.equals("denumire")) {
+                            if (parser.next() == XmlPullParser.TEXT) {
+                                client.setNume(parser.getText());
+                                parser.nextTag();
+                            }
+                        } else if (subname.equals("cod_fiscal")) {
+                            if (parser.next() == XmlPullParser.TEXT) {
+                                client.setCif(parser.getText());
+                                parser.nextTag();
+                            }
+                        } else {
+                            skip(parser);
+                        }
+                    }
+
+                    clienti.add(client);
+                    //skip(parser);
+                } else {
+                    skip(parser);
+                }
+            }
+        }catch (XmlPullParserException ex){
+            ex.printStackTrace();
         }
-
-
+        return clienti;
     }
+
+
 
 
     private void skip(XmlPullParser xpp) throws XmlPullParserException, IOException {

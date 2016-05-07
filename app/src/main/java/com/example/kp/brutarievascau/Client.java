@@ -20,22 +20,22 @@ public class Client {
 
         // Set Fields ////////////////////////////
         public void setNume(String nume){
-            this.c_nume = nume.toString();
+            this.c_nume = nume;
         }
         public void setAdresa(String adresa){
-            this.c_adresa = adresa.toString();
+            this.c_adresa = adresa;
         }
         public void setInfoUser(String info){
-            this.c_info = info.toString();
+            this.c_info = info;
         }
         public void setCif(String cif){
-            this.c_cif = cif.toString();
+            this.c_cif = cif;
         }
         public void setNrReg(String nrreg){
-            this.c_nrreg = nrreg.toString();
+            this.c_nrreg = nrreg;
         }
         public void setIban(String iban){
-            this.c_iban = iban.toString();
+            this.c_iban = iban;
         }
         public void setId(int idclient) {this.c_id=idclient;}
 

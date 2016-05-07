@@ -77,7 +77,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Salveaza Comanda"
+        android:text="Salveaza Produs"
         android:id="@+id/savecomandspinner"
         android:layout_below="@+id/butonAddProdusSpiner"
         android:layout_alignStart="@+id/butonAddProdusSpiner"
@@ -112,5 +112,13 @@
         android:layout_alignParentEnd="true"
         android:textAlignment="center"
         android:background="#fbf695" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Salveaza Comanda"
+        android:id="@+id/btnSaveAll"
+        android:layout_above="@+id/exitcomandaproduse"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

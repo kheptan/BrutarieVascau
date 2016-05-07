@@ -62,6 +62,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLConnection;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
@@ -85,6 +88,12 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
      View view;
      ProgressBar pb= null;
      double totalcutva=0;
+     String denFisier = null;
+
+     final String formatdate = "ddMMyyy";
+     final String formatdate2 = "dd-MM-yyy";
+     SimpleDateFormat sdate = new SimpleDateFormat(formatdate);
+     SimpleDateFormat sdate2 = new SimpleDateFormat(formatdate2);
 
      static final int REQUEST_CODE_PICK_ACCOUNT = 1000;
      static final int REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR = 1001;
@@ -95,7 +104,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
      File file=null;
      OutputStream outputStream=null;
 
-     final static String TO = "dacian.capitan@rdsor.ro";
+     final static String TO = "office@brutariavascau.ro";
      final static String FROM = "me";
      final static String SUBJECT = "Email de test din android!!!";
      final static String BODYTEXT = "weeeeeeeeeeeeeee";
@@ -105,25 +114,31 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
     protected void onCreate(Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
                 setContentView(R.layout.activity_preview_comanda);
-
+                DBhelper db = new DBhelper(getBaseContext());
+                db.openDB();
+                int numar_comanda = getIntent().getIntExtra("NumarComanda", 0);
+                comandaNoua = db.getNrAntet(Integer.toString(numar_comanda));
+                final java.util.Date date = new java.util.Date();
+                date.setTime(comandaNoua.get_data());
                 Button btnSendEmail = (Button) findViewById(R.id.btnSendEmailCom);
                 ConnectivityManager manager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+
                 final NetworkInfo mobile = manager.getActiveNetworkInfo();
                 pb= (ProgressBar) findViewById(R.id.progressBar);
                 pb.setVisibility(View.INVISIBLE);
+
                 if (Environment.getExternalStorageState()
                         .equals(Environment.MEDIA_MOUNTED)) {
+                    Calendar calendar = Calendar.getInstance();
+                    //Date now = new Date(calendar.getTimeInMillis());
+
                     File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                     path.mkdirs();
-                    file = new File(path, "comanda.xml");
+                    denFisier = "F_17314580_numarfactura_"+sdate2.format(date)+"_"+sdate.format(date)+".xml";
+                    file = new File(path, denFisier);
                 }
 
-                int numar_comanda = getIntent().getIntExtra("NumarComanda", 0);
 
-                DBhelper db = new DBhelper(getBaseContext());
-                db.openDB();
-
-                comandaNoua = db.getNrAntet(Integer.toString(numar_comanda));
                 totalcutva = comandaNoua.get_valTotal()*0.09;
 
                 final List<Client> listClient = db.listAllClients();
@@ -162,15 +177,15 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                         listView.setAdapter(arrayAdapter);
                         db.closeDB();
                 }
-
-                Button b = (Button) findViewById(R.id.b);
+                /**
+                Button b = (Button) findViewById(R.id.);
                 b.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
 
                     }
                 });
-
+                */
                 btnSendEmail.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -192,6 +207,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                                         }
                                     }
 
+
                                     serializer.startTag(null, "Factura");
                                             serializer.startTag(null, "Antet");
                                                         serializer.startTag(null,"FurnizorNume").text("S.C. ALEXPAN S.R.L").endTag(null, "FurnizorNume");
@@ -207,15 +223,15 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                                                             serializer.startTag(null,"ClientNume").text(findClient.getNume()).endTag(null,"ClientNume");
                                                             serializer.startTag(null, "ClientInformatiiSuplimentare").endTag(null,"ClientInformatiiSuplimentare");
                                                             serializer.startTag(null,"ClientCIF").text(findClient.getCif()).endTag(null,"ClientCIF");
-                                                            serializer.startTag(null,"ClientNrRegCom").text(findClient.getNrReg()).endTag(null,"ClientNrRegCom");
-                                                            serializer.startTag(null,"ClientAdresa").text(findClient.getAdresa()).endTag(null,"ClientAdresa");
-                                                            serializer.startTag(null, "ClientBanca").endTag(null,"ClientBanca");
-                                                            serializer.startTag(null,"ClientIBAN").text(findClient.getIban()).endTag(null,"ClientIBAN");
+                                                           // serializer.startTag(null,"ClientNrRegCom").text(findClient.getNrReg()).endTag(null,"ClientNrRegCom");
+                                                            //serializer.startTag(null,"ClientAdresa").text(findClient.getAdresa()).endTag(null,"ClientAdresa");
+                                                          //  serializer.startTag(null, "ClientBanca").endTag(null,"ClientBanca");
+                                                           // serializer.startTag(null,"ClientIBAN").text(findClient.getIban()).endTag(null,"ClientIBAN");
                                                         }
 
                                                         serializer.startTag(null,"FacturaNumar").text("1").endTag(null, "FacturaNumar");
-                                                        serializer.startTag(null,"FacturaData").text(comandaNoua.get_data()).endTag(null, "FacturaData");
-                                                        serializer.startTag(null,"FacturaScadenta").text(comandaNoua.get_data()).endTag(null, "FacturaScadenta");
+                                                        serializer.startTag(null,"FacturaData").text(sdate2.format(date)).endTag(null, "FacturaData");
+                                                        serializer.startTag(null,"FacturaScadenta").text(sdate2.format(date)).endTag(null, "FacturaScadenta");
                                                         serializer.startTag(null,"FacturaTaxareInversa").text("Nu").endTag(null, "FacturaTaxareInversa");
                                                         serializer.startTag(null,"FacturaTVAIncasare").text("Nu").endTag(null, "FacturaTVAIncasare");
                                                         serializer.startTag(null, "FacturaInformatiiSuplimentare").endTag(null, "FacturaInformatiiSuplimentare");
@@ -224,13 +240,13 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                                                         serializer.startTag(null,"FacturaGreutate").text("0.000").endTag(null, "FacturaGreutate");
                                             serializer.endTag(null, "Antet");
 
-                                            serializer.startTag(null, "Detalii");
+                                           serializer.startTag(null, "Detalii");
                                                         serializer.startTag(null, "Continut");
                                                                     for(detaliiJoin linii : lstdetalii){
                                                                         serializer.startTag(null, "Linie");
                                                                               serializer.startTag(null,"LinieNrCrt").text(""+linii.getLinie()).endTag(null, "LinieNrCrt");
                                                                               serializer.startTag(null,"Descriere").text(linii.getDenProdus()).endTag(null, "Descriere");
-                                                                              serializer.startTag(null, "CodArticolFurnizor").endTag(null, "CodArticolFurnizor");
+                                                                              serializer.startTag(null, "CodArticolFurnizor").text(""+linii.getCdProdus()).endTag(null, "CodArticolFurnizor");
                                                                               serializer.startTag(null,"CodArticolClient").endTag(null, "CodArticolClient");
                                                                               serializer.startTag(null,"CodBare").endTag(null, "CodBare");
                                                                               serializer.startTag(null, "InformatiiSuplimentare").endTag(null, "InformatiiSuplimentare");
@@ -338,6 +354,9 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 LayoutInflater inflater = getLayoutInflater();
                 view=inflater.inflate(R.layout.list_header_detalii,parent,false);
 
+                java.util.Date date = new java.util.Date();
+                date.setTime(comandaNoua.get_data());
+
                 if(comandaNoua.get_client()!="") {
                     TextView denumire = (TextView) view.findViewById(R.id.header_beneficiar);
                     TextView nrcom = (TextView) view.findViewById(R.id.header_nr_comanda);
@@ -346,7 +365,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
 
                     denumire.setText(comandaNoua.get_client());
                     nrcom.setText(Integer.toString(comandaNoua.get_nrCom()));
-                    datac.setText(comandaNoua.get_data());
+                    datac.setText(sdate2.format(date));
                     valTotal.setText(Double.toString(comandaNoua.get_valTotal()));
                 }
                 return view;
@@ -456,7 +475,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                                 CoduriProduse itemSelected;
                                 itemSelected = (CoduriProduse) parent.getItemAtPosition(position);
-                                codprodus = itemSelected.getPr_codprodus();
+                                codprodus = itemSelected.getID();
                                 pret = itemSelected.getPret();
                                 Toast.makeText(getContext(), "" + codprodus, Toast.LENGTH_LONG).show();
                             }
@@ -515,7 +534,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
 
 
         final String fileDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-        final String filename = "comanda.xml";
+        final String filename = denFisier;
         String token;
         String messageId;
 
