@@ -9,8 +9,7 @@
         android:id="@+id/checkBox"
         android:focusable="false"
         android:focusableInTouchMode="false"
-
-        android:checked="false" />
+        />
 
     <TextView
         android:layout_width="wrap_content"
