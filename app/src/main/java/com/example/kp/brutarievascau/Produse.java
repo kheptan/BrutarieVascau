@@ -127,41 +127,44 @@ public class Produse extends AppCompatActivity
             parser.require(XmlPullParser.START_TAG, ns, "VFPData");
 
             while (parser.next() != XmlPullParser.END_TAG) {
-                if (parser.getEventType() != XmlPullParser.START_TAG) {
-                    continue;
-                }
-                String name = parser.getName();
-
-                if (name.equals("c_xml")) {
-                    CoduriProduse cp = new CoduriProduse();
-                    //Client client = new Client();
-                    /** READ */
-                    parser.require(XmlPullParser.START_TAG, ns, "c_xml");
-                    while (parser.next() != XmlPullParser.END_TAG) {
                         if (parser.getEventType() != XmlPullParser.START_TAG) {
                             continue;
                         }
-                        String subname = parser.getName();
-                        if (subname.equals("cod")) {
-                            if (parser.next() == XmlPullParser.TEXT) {
-                                cp.setPr_codprodus(parser.getText());
-                                parser.nextTag();
-                            }
-                        } else if (subname.equals("denumire")) {
-                            if (parser.next() == XmlPullParser.TEXT) {
-                                cp.setPr_denumire(parser.getText());
-                                parser.nextTag();
-                            }
+                        String name = parser.getName();
+                        if (name.equals("c_xml")) {
+                                    CoduriProduse cp = new CoduriProduse();
+                                    //Client client = new Client();
+                                    /** READ */
+                                    parser.require(XmlPullParser.START_TAG, ns, "c_xml");
+                                    while (parser.next() != XmlPullParser.END_TAG) {
+                                                if (parser.getEventType() != XmlPullParser.START_TAG) {
+                                                    continue;
+                                                }
+                                                String subname = parser.getName();
+                                                if (subname.equals("cod")) {
+                                                    if (parser.next() == XmlPullParser.TEXT) {
+                                                        cp.setPr_codprodus(parser.getText());
+                                                        parser.nextTag();
+                                                    }
+                                                } else if (subname.equals("denumire")) {
+                                                    if (parser.next() == XmlPullParser.TEXT) {
+                                                        cp.setPr_denumire(parser.getText());
+                                                        parser.nextTag();
+                                                    }
+                                                } else if (subname.equals("pret_vanz")) {
+                                                    if (parser.next() == XmlPullParser.TEXT) {
+                                                        cp.setPret(Double.parseDouble(parser.getText()));
+                                                        parser.nextTag();
+                                                    }
+                                                } else {
+                                                    skip(parser);
+                                                }
+                                    }
+                                    produse.add(cp);
+                            //skip(parser);
                         } else {
                             skip(parser);
                         }
-                    }
-
-                    produse.add(cp);
-                    //skip(parser);
-                } else {
-                    skip(parser);
-                }
             }
         }catch (XmlPullParserException ex){
             ex.printStackTrace();
@@ -243,10 +246,7 @@ public class Produse extends AppCompatActivity
                   cdf.setTargetFragment(this,0);
                   cdf.show(fm,"CasutaDialog");
              }
-
-
     }
-
 
 
     /**

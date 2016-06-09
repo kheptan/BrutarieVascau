@@ -79,8 +79,6 @@ public class DBhelper  {
                 db.execSQL("DROP TABLE IF EXISTS " + DBcontract.TABLE_ANTET_COMANDA);
                 db.execSQL("DROP TABLE IF EXISTS " + DBcontract.TABLE_DETALII_COMANDA);
                 db.execSQL("DROP TABLE IF EXISTS " + DBcontract.TABLE_USER);
-
-
                 // create new tables
                 onCreate(db);
             }
@@ -103,7 +101,6 @@ public class DBhelper  {
                     }
     }
 
-
    /**
          *  CLOSE DATABASES;
    */
@@ -112,9 +109,6 @@ public class DBhelper  {
                             localSqliteDB.close();
                     }
     }
-
-
-
 
     /** ADD NEW CLIENT IN DATABASE
     */
@@ -209,6 +203,26 @@ public class DBhelper  {
                      }catch (SQLException sq){
                          sq.printStackTrace();
                      }
+    }
+    /** Update Lista Email */
+    public void updateEmailList(long now){
+                    SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
+                    Date date = new Date();
+                    date.setTime(now);
+
+                    String whereClause = "strftime('%d%m%Y', "+DBcontract.KEY_EMAIL_COMENZI_DATA_COMANDA + "/1000,'unixepoch') = ? and " + DBcontract.KEY_EMAIL_COMENZI_STARE_COMANDA + "=0";
+                    String[] args_selection = { sd.format(date) };
+
+                    ContentValues values = new ContentValues();
+                    values.put(DBcontract.KEY_EMAIL_COMENZI_STARE_COMANDA,1);
+
+                    this.openDB();
+                    int result=localSqliteDB.update(DBcontract.TABLE_EMAIL_COMENZI,values,whereClause,args_selection);
+                    if(result<1){
+                        Toast.makeText(localContext, "Nu am updatat nimic", Toast.LENGTH_LONG).show();
+                    }else{
+                        Toast.makeText(localContext, "Update reusit", Toast.LENGTH_LONG).show();
+                    }
     }
 
     /**Listeaza Comenzile pt o datta*/
@@ -455,9 +469,9 @@ public class DBhelper  {
 
     public double douaZeci(double d)
     {
-        BigDecimal bd = new BigDecimal(d);
-        bd=bd.setScale(2,BigDecimal.ROUND_DOWN);
-        return bd.doubleValue();
+                    BigDecimal bd = new BigDecimal(d);
+                    bd=bd.setScale(2,BigDecimal.ROUND_DOWN);
+                    return bd.doubleValue();
     }
 
 }

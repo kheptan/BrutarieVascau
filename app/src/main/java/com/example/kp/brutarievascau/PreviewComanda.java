@@ -104,7 +104,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
      File file=null;
      OutputStream outputStream=null;
 
-     final static String TO = "office@brutariavascau.ro";
+     final static String TO = "dacian.capitan@rdsor.ro";
      final static String FROM = "me";
      final static String SUBJECT = "Email de test din android!!!";
      final static String BODYTEXT = "weeeeeeeeeeeeeee";
@@ -116,10 +116,12 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 setContentView(R.layout.activity_preview_comanda);
                 DBhelper db = new DBhelper(getBaseContext());
                 db.openDB();
+
                 int numar_comanda = getIntent().getIntExtra("NumarComanda", 0);
                 comandaNoua = db.getNrAntet(Integer.toString(numar_comanda));
                 final java.util.Date date = new java.util.Date();
                 date.setTime(comandaNoua.get_data());
+
                 Button btnSendEmail = (Button) findViewById(R.id.btnSendEmailCom);
                 ConnectivityManager manager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
 

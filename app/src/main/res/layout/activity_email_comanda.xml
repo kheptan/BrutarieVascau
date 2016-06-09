@@ -13,43 +13,33 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="date"
-        android:ems="10"
-        android:id="@+id/cautaDupaData"
-        android:hint="Format data (01-01-2016)"
-        android:layout_below="@+id/editText2"
-        android:layout_centerHorizontal="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText2"
+        android:id="@+id/editDatePickUpDialog"
+        android:text="Introduceti Data"
         android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/cautaDupaData"
-        android:layout_marginStart="53dp"
-        android:text="Introduceti Data" />
+        android:layout_toStartOf="@+id/btnSendAllMails" />
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/listViewEmailComanda"
-        android:layout_below="@+id/cautaDupaData"
         android:layout_marginTop="65dp"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/editDatePickUpDialog" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Cauta Comenzi"
         android:id="@+id/button5"
-        android:layout_below="@+id/cautaDupaData"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/editDatePickUpDialog" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Trimite Mail"
         android:id="@+id/btnSendAllMails"
-        android:layout_below="@+id/cautaDupaData"
-        android:layout_alignEnd="@+id/listViewEmailComanda" />
+        android:layout_alignEnd="@+id/listViewEmailComanda"
+        android:layout_below="@+id/editDatePickUpDialog" />
+
 </RelativeLayout>

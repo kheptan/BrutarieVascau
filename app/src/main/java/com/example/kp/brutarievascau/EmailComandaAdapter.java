@@ -37,14 +37,14 @@ public class EmailComandaAdapter extends ArrayAdapter<ComenziEmail> {
 
         ComenziEmail comenziEmail = getItem(position);
 
-        final CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.checkBox);
+        //final CheckBox checkBox = (CheckBox) convertView.findViewById(R.id.checkBox);
         final TextView textView = (TextView) convertView.findViewById(R.id.EmailComandaListView);
         textView.setText("Comanda: " +comenziEmail.getNrComanda());
         //if(textView!=null && comenziEmail!=null){
         //Toast.makeText(myContext, "format data " + comenziEmail.getDataComanda(), Toast.LENGTH_LONG).show();
         //}
 
-        checkBox.setOnClickListener(new View.OnClickListener() {
+        /*checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 CheckBox cb = (CheckBox) v;
@@ -62,7 +62,7 @@ public class EmailComandaAdapter extends ArrayAdapter<ComenziEmail> {
         }else {
             checkBox.setChecked(true);
             checkBox.setEnabled(false);
-        }
+        }*/
 
         return convertView;
     }
