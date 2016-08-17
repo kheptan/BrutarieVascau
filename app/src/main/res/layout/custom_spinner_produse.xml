@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,13 +8,14 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Denumire"
-        android:id="@+id/spiner_denumire_produs" />
+        android:textSize="15sp"
+        android:id="@+id/spiner_denumire_produs"
+        android:layout_alignParentTop="true"
+        android:singleLine="false"
+        android:paddingBottom="15dp"
+        android:layout_alignParentEnd="true"
+        android:lines="2"
+        android:layout_alignParentStart="true"
+        android:autoText="false" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Pret"
-        android:id="@+id/spiner_pret_produs"
-        android:layout_marginLeft="20dp" />
-</LinearLayout>
+</RelativeLayout>

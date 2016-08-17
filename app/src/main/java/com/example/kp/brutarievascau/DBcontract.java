@@ -49,6 +49,7 @@ public class DBcontract {
      public final static String KEY_EMAIL_COMENZI_DATA_COMANDA = "data_comanda";
      public final static String KEY_EMAIL_COMENZI_NR_COMANDA = "nr_comanda";
      public final static String KEY_EMAIL_COMENZI_STARE_COMANDA = "stare_comanda";
+     public final static String KEY_EMAIL_COMENZI_ID_CLIENT = "id_client";
      // def campuri magazin  ///////////////////////////////////////////////////////
 
      public final static String KEY_MAGAZINE_NUME = "nume";
@@ -112,6 +113,7 @@ public class DBcontract {
                           KEY_ID + " INTEGER PRIMARY KEY ASC AUTOINCREMENT, " +
                           KEY_EMAIL_COMENZI_DATA_COMANDA + " INTEGER, " +
                           KEY_EMAIL_COMENZI_NR_COMANDA + " INTEGER, "+
+                          KEY_EMAIL_COMENZI_ID_CLIENT + " INTEGER, "+
                           KEY_EMAIL_COMENZI_STARE_COMANDA + " INTEGER )";
 
 

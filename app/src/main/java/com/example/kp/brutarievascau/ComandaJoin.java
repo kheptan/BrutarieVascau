@@ -8,7 +8,7 @@ public class ComandaJoin {
     }
 
 int nr_comanda;
-String client;
+String client="";
 double valoare;
 long data_com;
 double valTotal;

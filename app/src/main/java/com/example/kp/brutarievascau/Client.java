@@ -6,12 +6,12 @@ package com.example.kp.brutarievascau;
 public class Client {
 
         int c_id;
-        String c_nume;
-        String c_adresa;
-        String c_info;
-        String c_cif;
-        String c_nrreg;
-        String c_iban;
+        String c_nume="";
+        String c_adresa="";
+        String c_info="";
+        String c_cif="";
+        String c_nrreg="";
+        String c_iban="";
 
         // Empty constructor;
         public Client() {

@@ -17,6 +17,7 @@ import android.widget.Toast;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -161,7 +162,7 @@ public class DBhelper  {
                     valori.put(DBcontract.KEY_ANTET_COMANDA_DATA_COMANDA,antet.getDataCom());
                     try {
                         final long insertAntet = this.localSqliteDB.insertOrThrow(DBcontract.TABLE_ANTET_COMANDA,null,valori);
-                        Toast.makeText(localContext, "Am adaugat Antet  ", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(localContext, "Am adaugat Antet  ", Toast.LENGTH_LONG).show();
                     }catch (SQLException e){
                         e.printStackTrace();
                     }
@@ -172,18 +173,21 @@ public class DBhelper  {
     /** Adauga DEtalii Comanda */
     public void addDetalii(detaliiJoin detalii){
                      this.openDB();
-
+                     //Toast.makeText(localContext, "Am adaugat Antet  ", Toast.LENGTH_LONG).show();
                      ContentValues val = new ContentValues();
 
                      val.put(DBcontract.KEY_DETALII_COMANDA_NR_LINIE,detalii.getLinie());
                      val.put(DBcontract.KEY_DETALII_COMANDA_NR_COMANDA, detalii.getNrcomanda());
                      val.put(DBcontract.KEY_DETALII_COMANDA_ID_PRODUS, detalii.getCodprodus());
+                     //val.put(DBcontract.KEY_DETALII_COMANDA_ID_PRODUS,detalii.getCodProdus());
                      val.put(DBcontract.KEY_DETALII_COMANDA_CANTITATE, detalii.getCantitate());
                      val.put(DBcontract.KEY_DETALII_COMANDA_PRET,detalii.getPret());
                      val.put(DBcontract.KEY_DETALII_COMANDA_VALOARE, detalii.getValoare());
+                     val.put(DBcontract.KEY_DETALII_COMANDA_TVA, detalii.getTva());
 
                      try {
                          final long insDetalii = this.localSqliteDB.insertOrThrow(DBcontract.TABLE_DETALII_COMANDA, null, val);
+                         Toast.makeText(localContext, "Produs adaugat cu succes!!!", Toast.LENGTH_SHORT).show();
                      }catch (SQLException e){
                          e.printStackTrace();
                      }
@@ -197,43 +201,70 @@ public class DBhelper  {
                      val.put(DBcontract.KEY_EMAIL_COMENZI_DATA_COMANDA, comenziEmail.getDataComanda());
                      val.put(DBcontract.KEY_EMAIL_COMENZI_NR_COMANDA, comenziEmail.getNrComanda());
                      val.put(DBcontract.KEY_EMAIL_COMENZI_STARE_COMANDA, comenziEmail.getStare());
-
+                     val.put(DBcontract.KEY_EMAIL_COMENZI_ID_CLIENT,comenziEmail.getClientID());
                      try {
                          final long insertCom = this.localSqliteDB.insertOrThrow(DBcontract.TABLE_EMAIL_COMENZI,null,val);
+                         //Toast.makeText(localContext, " Aceasta comanda este deja salvata !!! "+ insertCom, Toast.LENGTH_SHORT).show();
                      }catch (SQLException sq){
                          sq.printStackTrace();
                      }
     }
+    public int deleteEmailComanda(int numarComanda){
+        String whereClause = DBcontract.TABLE_EMAIL_COMENZI + "."+ DBcontract.KEY_EMAIL_COMENZI_NR_COMANDA + "= ?";
+        String whereClause2 = DBcontract.TABLE_ANTET_COMANDA + "." + DBcontract.KEY_ANTET_COMANDA_NR_COMANDA +"= ?";
+        String whereClause3 = DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_NR_COMANDA +"= ?";
+        String[] args_selection = { Integer.toString(numarComanda) };
+
+        this.openDB();
+
+        final int delCom = localSqliteDB.delete(DBcontract.TABLE_EMAIL_COMENZI,whereClause,args_selection);
+        final int delCom2 = localSqliteDB.delete(DBcontract.TABLE_ANTET_COMANDA,whereClause2,args_selection);
+        final int delCom3 = localSqliteDB.delete(DBcontract.TABLE_DETALII_COMANDA,whereClause3,args_selection);
+        return delCom;
+
+    }
     /** Update Lista Email */
     public void updateEmailList(long now){
                     SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
-                    Date date = new Date();
-                    date.setTime(now);
-
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(now);
                     String whereClause = "strftime('%d%m%Y', "+DBcontract.KEY_EMAIL_COMENZI_DATA_COMANDA + "/1000,'unixepoch') = ? and " + DBcontract.KEY_EMAIL_COMENZI_STARE_COMANDA + "=0";
-                    String[] args_selection = { sd.format(date) };
+                    String[] args_selection = { sd.format(calendar.getTime()) };
 
                     ContentValues values = new ContentValues();
                     values.put(DBcontract.KEY_EMAIL_COMENZI_STARE_COMANDA,1);
 
                     this.openDB();
                     int result=localSqliteDB.update(DBcontract.TABLE_EMAIL_COMENZI,values,whereClause,args_selection);
-                    if(result<1){
+                    /**if(result<1){
                         Toast.makeText(localContext, "Nu am updatat nimic", Toast.LENGTH_LONG).show();
                     }else{
-                        Toast.makeText(localContext, "Update reusit", Toast.LENGTH_LONG).show();
-                    }
+                        Toast.makeText(localContext, "Update reusit", Toast.LENGTH_SHORT).show();
+                    }*/
+    }
+
+    /**Delete one line product */
+
+    public int deleteLineProduct(int nrcom,int line){
+                     String whereClause = DBcontract.KEY_DETALII_COMANDA_NR_COMANDA + "= ? and " + DBcontract.KEY_DETALII_COMANDA_NR_LINIE + " = "+line;
+                     String[] args_selection = { Integer.toString(nrcom) };
+
+                     this.openDB();
+
+                     final int delete = localSqliteDB.delete(DBcontract.TABLE_DETALII_COMANDA, whereClause, args_selection);
+                     return delete;
+
     }
 
     /**Listeaza Comenzile pt o datta*/
     public List<ComenziEmail> listALlEmailComenzi(long dataComanda){
                     SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
-                    Date date = new Date();
-                    date.setTime(dataComanda);
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(dataComanda);
 
-                    String[] pFields = {"_id","data_comanda","nr_comanda","stare_comanda"};
-                    String whereClause = "strftime('%d%m%Y', "+DBcontract.KEY_EMAIL_COMENZI_DATA_COMANDA + "/1000,'unixepoch') = ?";
-                    String[] args_selection = { sd.format(date) };
+                    String[] pFields = {"_id","data_comanda","nr_comanda","stare_comanda","id_client"};
+                    String whereClause = "strftime('%d%m%Y', "+DBcontract.TABLE_EMAIL_COMENZI+ "." + DBcontract.KEY_EMAIL_COMENZI_DATA_COMANDA + "/1000,'unixepoch') = ?";
+                    String[] args_selection = { sd.format(calendar.getTime()) };
                     //Toast.makeText(localContext, "data:"+ sd.format(dataComanda), Toast.LENGTH_LONG).show();
                     //Toast.makeText(localContext, "data:"+ sd.format(dataComanda), Toast.LENGTH_LONG).show();
                     this.openDB();
@@ -248,6 +279,7 @@ public class DBhelper  {
                                comenziEmail.setDataComanda(cursor.getLong(cursor.getColumnIndex(DBcontract.KEY_EMAIL_COMENZI_DATA_COMANDA)));
                                comenziEmail.setNrComanda(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_EMAIL_COMENZI_NR_COMANDA)));
                                comenziEmail.setStare(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_EMAIL_COMENZI_STARE_COMANDA)));
+                               comenziEmail.setClientID(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_EMAIL_COMENZI_ID_CLIENT)));
                                list.add(comenziEmail);
                         }while(cursor.moveToNext());
                     }
@@ -261,10 +293,10 @@ public class DBhelper  {
     public List<CoduriProduse> listAllProducts(){
                      String[] pFields = {"_id","cod_produs","denumire","pret"};
                     this.openDB();
-
+                    String by_order = "produse.denumire ASC";
 
                     List<CoduriProduse> codProduse = new ArrayList<CoduriProduse>();
-                    Cursor cursor = localSqliteDB.query(DBcontract.TABLE_PRODUSE,pFields,null,null,null,null,null,null);
+                    Cursor cursor = localSqliteDB.query(DBcontract.TABLE_PRODUSE,pFields,null,null,null,null,by_order,null);
                     if (cursor.moveToFirst() || cursor.getCount()>0) {
                         do {
                             CoduriProduse produse = new CoduriProduse();
@@ -341,70 +373,183 @@ public class DBhelper  {
                     return comjoin;
     }
 
+    public List<Aviz> getAviz(String nrcomanda){
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
 
+        this.openDB();
 
-    /** Detalii Inner JOIN get all **/
-    public List<detaliiJoin> getDetalii(String nr_comanda){
-                  //Toast.makeText(localContext, " !!! "+ nr_comanda, Toast.LENGTH_LONG).show();
-                   SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        String tables = DBcontract.TABLE_ANTET_COMANDA
+                +  " INNER JOIN " + DBcontract.TABLE_DETALII_COMANDA
+                +  " ON ("+DBcontract.TABLE_ANTET_COMANDA + "."+DBcontract.KEY_ANTET_COMANDA_NR_COMANDA
+                +  " = " + DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_NR_COMANDA
+                +  ") INNER JOIN " + DBcontract.TABLE_PRODUSE
+                +  " ON ("+DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_ID
+                +  " = " +DBcontract.TABLE_DETALII_COMANDA + "."+DBcontract.KEY_DETALII_COMANDA_ID_PRODUS
+                +  ") ";
+        String subquery =
+                "( " +
+                        "SUM(cantitate)" +
+                        ") as totalcantitate";
 
-                   String tables = DBcontract.TABLE_PRODUSE
-                        +  " INNER JOIN " + DBcontract.TABLE_DETALII_COMANDA
-                        +  " ON ("+DBcontract.TABLE_PRODUSE + "."+DBcontract.KEY_ID
-                        +  " = " + DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_ID_PRODUS
-                        +  ")";
+        String groupBy = DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_PRODUSE_NUME;
+        String whereClause = DBcontract.TABLE_DETALII_COMANDA + "."+DBcontract.KEY_DETALII_COMANDA_NR_COMANDA + " = ?";
+        String[]  args_selection = { nrcomanda };
+        String[] antets = { "cod_produs","denumire",subquery,"produse.pret","valoare" };
 
-                   String subquery =
-                        "( " +
-                              "SELECT " + DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_PRODUSE_NUME +"  FROM " + DBcontract.TABLE_PRODUSE +
-                               " WHERE " +  DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_ID + " = " +  DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_ID_PRODUS +
-                               " AND " +  DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_NR_COMANDA + " = " + nr_comanda +
-                         ") as c1 ";
+        qb.setTables(tables);
+        Cursor cursor = qb.query(localSqliteDB,antets,whereClause,args_selection,groupBy,null,null);
+        List<Aviz> listAviz = new ArrayList<Aviz>();
+        if(cursor.moveToFirst() || cursor.getCount()>=1) {
+            do {
+                Aviz aviznou = new Aviz();
+                aviznou.setCodprodus(cursor.getString(cursor.getColumnIndex("cod_produs")));
+                aviznou.setDenumireProdus(cursor.getString(cursor.getColumnIndex("denumire")));
+                aviznou.setCantitate(cursor.getInt(cursor.getColumnIndex("totalcantitate")));
+                aviznou.setPret(patruzeci(cursor.getDouble(cursor.getColumnIndex("pret"))));
+                aviznou.setValoare(cursor.getDouble(cursor.getColumnIndex("valoare")));
+                listAviz.add(aviznou);
+            }while(cursor.moveToNext());
 
-                   String subquery2 =
-                        "( " +
-                        "SELECT " + DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_PRODUSE_COD_PRODUS +"  FROM " + DBcontract.TABLE_PRODUSE +
-                        " WHERE " +  DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_ID + " = " +  DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_ID_PRODUS +
-                        " AND " +  DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_NR_COMANDA + " = " + nr_comanda +
-                        ") as c2 ";
-
-                    String whereClause = DBcontract.KEY_DETALII_COMANDA_NR_COMANDA + " = ?";
-                    String[]  args_selection = { nr_comanda };
-
-                    String[] antets = { "detalii_comanda.pret","nr_com","id_produs","nr_linie","cantitate","valoare",subquery,subquery2 };
-
-                    qb.setTables(tables);
-
-
-                   List<detaliiJoin> listDetalii = new ArrayList<detaliiJoin>();
-                   Cursor cursor = qb.query(localSqliteDB,antets,whereClause,args_selection,null,null,null);
-
-                   if(cursor.moveToFirst()) {
-                        do {
-                            detaliiJoin dJ = new detaliiJoin();
-
-                            dJ.setNrcomanda(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_NR_COMANDA)));
-                            dJ.setCodprodus(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_ID_PRODUS)));
-                            dJ.setLinie(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_NR_LINIE)));
-                            dJ.setCantitate(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_CANTITATE)));
-                            dJ.setPret(cursor.getDouble(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_PRET)));
-                            dJ.setValoare(cursor.getDouble(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_VALOARE)));
-                            dJ.setDenumireProdus(cursor.getString(cursor.getColumnIndex("c1")));
-                            dJ.setCdProdus(cursor.getString(cursor.getColumnIndex("c2")));
-                            listDetalii.add(dJ);
-
-                        }while(cursor.moveToNext());
-
-                    }else {
-                        //Toast.makeText(localContext, "Cursor Gol !!!", Toast.LENGTH_LONG).show();
-                   }
-                    cursor.close();
-                    return listDetalii;
-
+        }else {
+            //Toast.makeText(localContext, "Cursor Gol !!!", Toast.LENGTH_LONG).show();
+        }
+        cursor.close();
+        return listAviz;
 
     }
 
 
+    public List<Aviz> getAvize(long datacomanda){
+                    SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+                    SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(datacomanda);
+                    this.openDB();
+
+                    String tables = DBcontract.TABLE_ANTET_COMANDA
+                            +  " INNER JOIN " + DBcontract.TABLE_DETALII_COMANDA
+                            +  " ON ("+DBcontract.TABLE_ANTET_COMANDA + "."+DBcontract.KEY_ANTET_COMANDA_NR_COMANDA
+                            +  " = " + DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_NR_COMANDA
+                            +  ") INNER JOIN " + DBcontract.TABLE_PRODUSE
+                            +  " ON ("+DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_ID
+                            +  " = " +DBcontract.TABLE_DETALII_COMANDA + "."+DBcontract.KEY_DETALII_COMANDA_ID_PRODUS
+                            +  ") ";
+
+
+                    String subquery =
+                            "( " +
+                                    "SUM(cantitate)" +
+                             ") as totalcantitate";
+                    String subquery2 =
+                            "( " +
+                                    "SUM(valoare)" +
+                             ") as totalvaloare";
+
+                    String groupBy = DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_PRODUSE_NUME;
+                    String whereClause = "strftime('%d%m%Y', "+DBcontract.KEY_ANTET_COMANDA_DATA_COMANDA + "/1000,'unixepoch') = ?";
+                   // String whereClause = DBcontract.KEY_ANTET_COMANDA_DATA_COMANDA + " = ?";
+                    String[]  args_selection = { sd.format(calendar.getTime()) };
+                    String[] antets = { "cod_produs","denumire",subquery,"produse.pret",subquery2 };
+
+                    qb.setTables(tables);
+                    List<Aviz> listAviz = new ArrayList<Aviz>();
+
+                    Cursor cursor = qb.query(localSqliteDB,antets,whereClause,args_selection,groupBy,null,null);
+
+                     if(cursor.moveToFirst() || cursor.getCount()>=1) {
+                        do {
+                            Aviz aviznou = new Aviz();
+                            aviznou.setCodprodus(cursor.getString(cursor.getColumnIndex("cod_produs")));
+                            aviznou.setDenumireProdus(cursor.getString(cursor.getColumnIndex("denumire")));
+                            aviznou.setCantitate(cursor.getInt(cursor.getColumnIndex("totalcantitate")));
+                            aviznou.setPret(patruzeci(cursor.getDouble(cursor.getColumnIndex("pret"))));
+                            aviznou.setValoare(patruzeci(cursor.getDouble(cursor.getColumnIndex("totalvaloare"))));
+                            listAviz.add(aviznou);
+                        }while(cursor.moveToNext());
+
+                    }else {
+                        //Toast.makeText(localContext, "Cursor Gol !!!", Toast.LENGTH_LONG).show();
+                    }
+                    cursor.close();
+                    return listAviz;
+
+    }
+    /** Detalii Inner JOIN get all **/
+    public List<detaliiJoin> getDetalii(String nr_comanda) {
+        //Toast.makeText(localContext, " !!! "+ nr_comanda, Toast.LENGTH_LONG).show();
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+
+        String tables = DBcontract.TABLE_PRODUSE
+                + " INNER JOIN " + DBcontract.TABLE_DETALII_COMANDA
+                + " ON (" + DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_ID
+                + " = " + DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_ID_PRODUS
+                + ")";
+
+        String subquery =
+                "( " +
+                        "SELECT " + DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_PRODUSE_NUME + "  FROM " + DBcontract.TABLE_PRODUSE +
+                        " WHERE " + DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_ID + " = " + DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_ID_PRODUS +
+                        " AND " + DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_NR_COMANDA + " = " + nr_comanda +
+                        ") as c1 ";
+
+        String subquery2 =
+                "( " +
+                        "SELECT " + DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_PRODUSE_COD_PRODUS + "  FROM " + DBcontract.TABLE_PRODUSE +
+                        " WHERE " + DBcontract.TABLE_PRODUSE + "." + DBcontract.KEY_ID + " = " + DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_ID_PRODUS +
+                        " AND " + DBcontract.TABLE_DETALII_COMANDA + "." + DBcontract.KEY_DETALII_COMANDA_NR_COMANDA + " = " + nr_comanda +
+                        ") as c2 ";
+
+        String whereClause = DBcontract.KEY_DETALII_COMANDA_NR_COMANDA + " = ?";
+        String[] args_selection = {nr_comanda};
+        String order_by = "detalii_comanda.nr_linie ASC";
+
+        String[] antets = {"detalii_comanda.pret", "nr_com", "id_produs", "nr_linie", "cantitate", "valoare", "tva", subquery, subquery2};
+
+        qb.setTables(tables);
+
+
+        List<detaliiJoin> listDetalii = new ArrayList<detaliiJoin>();
+        Cursor cursor = qb.query(localSqliteDB, antets, whereClause, args_selection, null, null,order_by);
+
+        if(cursor.moveToFirst() || cursor.getCount()>=1){
+                do {
+                    detaliiJoin dJ = new detaliiJoin();
+                    dJ.setNrcomanda(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_NR_COMANDA)));
+                    dJ.setCodprodus(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_ID_PRODUS)));
+                    dJ.setLinie(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_NR_LINIE)));
+                    dJ.setCantitate(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_CANTITATE)));
+                    dJ.setPret(cursor.getDouble(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_PRET)));
+                    dJ.setValoare(cursor.getDouble(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_VALOARE)));
+                    dJ.setTva(cursor.getDouble(cursor.getColumnIndex(DBcontract.KEY_DETALII_COMANDA_TVA)));
+                    dJ.setDenumireProdus(cursor.getString(cursor.getColumnIndex("c1")));
+                    dJ.setCodProdus(cursor.getString(cursor.getColumnIndex("c2")));
+                    listDetalii.add(dJ);
+                } while (cursor.moveToNext());
+
+        } else {
+
+        }
+        cursor.close();
+        return listDetalii;
+    }
+
+    /**List a Client */
+    public String listClient(int id){
+        String[] pFields = {"_id","nume"};
+        String whereClause = "_id = ?";
+        String[] args_selection = { String.valueOf(id) };
+        this.openDB();
+        Cursor cursor = localSqliteDB.query(DBcontract.TABLE_MAGAZINE,pFields,whereClause,args_selection,null,null,null);
+
+        if(cursor.moveToFirst() || cursor.getCount()>0) {
+            return cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_NUME));
+        }else {
+            return "";
+        }
+
+
+    }
     /**
      * LIST ALL CLIENTS FROM DATABASE;
      */
@@ -419,10 +564,10 @@ public class DBhelper  {
                             Client client = new Client();
                             client.setId(cursor.getInt((cursor.getColumnIndex(DBcontract.KEY_ID))));
                             client.setNume(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_NUME)));
-                            //client.setAdresa(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_ADRESA)));
+                            client.setAdresa(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_ADRESA)));
                             client.setCif(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_CIF)));
                            // client.setIban(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_IBAN)));
-                           // client.setNrReg(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_NR_REGCOM)));
+                            client.setNrReg(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_NR_REGCOM)));
                            // client.setInfoUser(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_MAGAZINE_INFO)));
 
                             //client.setPr_denumire(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_PRODUSE_NUME)));
@@ -470,8 +615,14 @@ public class DBhelper  {
     public double douaZeci(double d)
     {
                     BigDecimal bd = new BigDecimal(d);
-                    bd=bd.setScale(2,BigDecimal.ROUND_DOWN);
+                    bd=bd.setScale(2,BigDecimal.ROUND_HALF_UP);
                     return bd.doubleValue();
+    }
+    public double patruzeci(double d)
+    {
+        BigDecimal bd = new BigDecimal(d);
+        bd=bd.setScale(4,BigDecimal.ROUND_HALF_UP);
+        return bd.doubleValue();
     }
 
 }

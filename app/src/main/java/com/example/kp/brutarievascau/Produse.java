@@ -23,6 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +47,7 @@ public class Produse extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_produse);
+
 
             TopProduse top = new TopProduse();
             Bundle bundle = new Bundle();
@@ -86,6 +88,13 @@ public class Produse extends AppCompatActivity
 
     public class XmlAsync extends AsyncTask<InputStream, Void, List<CoduriProduse>> {
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            ProgressBar pb = (ProgressBar) findViewById(R.id.progresBarProduse);
+            pb.setVisibility(View.VISIBLE);
+        }
+
+        @Override
         protected List<CoduriProduse> doInBackground(InputStream... params) {
             List<CoduriProduse> allproduse = new ArrayList<CoduriProduse>();
             try {
@@ -101,6 +110,8 @@ public class Produse extends AppCompatActivity
         @Override
         protected void onPostExecute(List<CoduriProduse> produse) {
             super.onPostExecute(produse);
+            ProgressBar pb = (ProgressBar) findViewById(R.id.progresBarProduse);
+            pb.setVisibility(View.INVISIBLE);
             if(produse.size()>0){
                 DBhelper prDB = new DBhelper(getBaseContext());
                 prDB.openDB();
@@ -153,7 +164,7 @@ public class Produse extends AppCompatActivity
                                                     }
                                                 } else if (subname.equals("pret_vanz")) {
                                                     if (parser.next() == XmlPullParser.TEXT) {
-                                                        cp.setPret(Double.parseDouble(parser.getText()));
+                                                        cp.setPret(patruZeci(Double.parseDouble(parser.getText())));
                                                         parser.nextTag();
                                                     }
                                                 } else {
@@ -343,7 +354,12 @@ public class Produse extends AppCompatActivity
          ReplaceFragment(view);
     }
 
-
+    public double patruZeci(double d)
+    {
+        BigDecimal bd = new BigDecimal(d);
+        bd=bd.setScale(4,BigDecimal.ROUND_HALF_UP);
+        return bd.doubleValue();
+    }
 
     /**
      * Metoda din interior ListFragment pt OnLongClick

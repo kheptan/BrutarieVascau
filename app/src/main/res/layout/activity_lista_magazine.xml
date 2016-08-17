@@ -23,6 +23,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/textViewZeroClients"
         android:layout_alignParentTop="true"
+        android:textSize="17sp"
         android:layout_centerHorizontal="true" />
 
 

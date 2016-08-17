@@ -7,22 +7,27 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.kp.brutarievascau.MainActivity">
+    tools:context="com.example.kp.brutarievascau.MainActivity"
+    android:background="#f6e7ac">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:id="@+id/textView" />
+        android:text="Brutaria Vascau v1.1"
+        android:id="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:text="Comanda Noua"
         android:id="@+id/button"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="trimiteComandaNoua"/>
+        android:onClick="trimiteComandaNoua"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="34dp"
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="200dp"
@@ -30,38 +35,19 @@
         android:text="Lista Comenzi"
         android:id="@+id/buttonListaComenzi"
         android:layout_below="@+id/button"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="Iesire"
-        android:id="@+id/button3"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/buttonListaComenzi"
-        android:layout_marginBottom="29dp"
-        android:background="#c43434"
-        android:enabled="true"
-        android:onClick="iesireprogram"/>
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="36dp"
+        android:layout_alignEnd="@+id/button" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Adauga Client Nou"
         android:id="@+id/buttonAddNewClient"
-        android:layout_above="@+id/button"
-        android:layout_alignEnd="@+id/button"
         android:onClick="addclientnou"
-        android:layout_alignStart="@+id/button" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Lista Clienti"
-        android:id="@+id/button4"
         android:layout_below="@+id/buttonListaComenzi"
-        android:layout_alignStart="@+id/buttonListaComenzi"
-        android:onClick="listallclients"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="29dp"
         android:layout_alignEnd="@+id/buttonListaComenzi" />
 
     <Button
@@ -70,8 +56,32 @@
         android:text="Lista Produse"
         android:id="@+id/buttonLstProduse"
         android:onClick="listaProduse"
-        android:layout_below="@+id/button4"
-        android:layout_alignEnd="@+id/button4"
-        android:layout_toEndOf="@+id/textView"
-        android:layout_alignStart="@+id/button4" />
+        android:layout_below="@+id/buttonAddNewClient"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="31dp"
+        android:layout_alignEnd="@+id/button4" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lista Clienti"
+        android:id="@+id/button4"
+        android:onClick="listallclients"
+        android:layout_below="@+id/buttonLstProduse"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="27dp"
+        android:layout_alignEnd="@+id/buttonAddNewClient" />
+
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Iesire"
+        android:id="@+id/button3"
+        android:layout_marginBottom="31dp"
+        android:background="#c43434"
+        android:enabled="true"
+        android:onClick="iesireprogram"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
 </RelativeLayout>

@@ -1,5 +1,7 @@
 package com.example.kp.brutarievascau;
 
+import java.math.BigDecimal;
+
 /**
  * Created by kp on 14/02/16.
  */
@@ -10,7 +12,7 @@ public class detaliiJoin {
     int linie;
     int nrcomanda;
     int codprodus;
-    String cdProdus;
+    String codProdus;
     String denumire_produs;
     int cantitate;
     double pret;
@@ -25,8 +27,10 @@ public class detaliiJoin {
     public void setCantitate(int ca)   { this.cantitate = ca; }
     public void setPret(double pr)     { this.pret = pr; }
     public void setValoare(double vl)  { this.valoare = vl; }
-    public void setTva(double tv)      { this.tva = tv; }
-    public void setCdProdus(String cprodus) { this.cdProdus = cprodus;}
+    public void setTva(double vtva){
+        this.tva = douaZeci(vtva);
+    }
+    public void setCodProdus(String cprodus) { this.codProdus = cprodus;}
 
     public int getLinie()       { return this.linie; }
     public int getNrcomanda()   { return this.nrcomanda; }
@@ -36,6 +40,14 @@ public class detaliiJoin {
     public double getPret()     { return this.pret; }
     public double getValoare()  { return this.valoare; }
     public double getTva()      { return this.tva; }
-    public String getCdProdus() { return this.cdProdus; }
+    public String getCodProdus() { return this.codProdus; }
+
+    public double douaZeci(double d)
+    {
+        BigDecimal bd = new BigDecimal(d);
+        bd=bd.setScale(2,BigDecimal.ROUND_DOWN);
+        return bd.doubleValue();
+    }
 
 }
+

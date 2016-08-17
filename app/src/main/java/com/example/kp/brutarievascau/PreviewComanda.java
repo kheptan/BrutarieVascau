@@ -5,7 +5,6 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,9 +15,11 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,8 +60,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.net.URLConnection;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -85,29 +88,39 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
      public ComandaJoin comandaNoua;
      public ArrayComanda arrayAdapter;
      public List<detaliiJoin> lstdetalii;
+     List<Aviz> aviz;
      View view;
      ProgressBar pb= null;
      double totalcutva=0;
-     String denFisier = null;
-
+     String denFisier = "";
+     int NrLinie=1;
+     ListView listView;
+     List<Client> listClient;
+     private final static String TAG = "MyActivity";
      final String formatdate = "ddMMyyy";
      final String formatdate2 = "dd-MM-yyy";
      SimpleDateFormat sdate = new SimpleDateFormat(formatdate);
      SimpleDateFormat sdate2 = new SimpleDateFormat(formatdate2);
-
+     Calendar emailDate;
      static final int REQUEST_CODE_PICK_ACCOUNT = 1000;
      static final int REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR = 1001;
 
      String scope = "oauth2:https://www.googleapis.com/auth/gmail.send";
      Account acount;
-
+     final String BODYTEXT_ANTET = "Total Comanda : \n\r";
+     String BODYTEXT = "";
      File file=null;
+     File fileAviz= null;
      OutputStream outputStream=null;
+     int NumarComanda;
+     int IdClient;
 
-     final static String TO = "dacian.capitan@rdsor.ro";
+     final static String TO = "office@brutariavascau.ro";
+     //final static String TO = "dacian.capitan@rdsor.ro";
      final static String FROM = "me";
-     final static String SUBJECT = "Email de test din android!!!";
-     final static String BODYTEXT = "weeeeeeeeeeeeeee";
+     final static String SUBJECT = "Comanda Email";
+     //final static String BODYTEXT = "weeeeeeeeeeeeeee";
+
 
 
     @Override
@@ -117,46 +130,53 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 DBhelper db = new DBhelper(getBaseContext());
                 db.openDB();
 
-                int numar_comanda = getIntent().getIntExtra("NumarComanda", 0);
-                comandaNoua = db.getNrAntet(Integer.toString(numar_comanda));
-                final java.util.Date date = new java.util.Date();
-                date.setTime(comandaNoua.get_data());
+                NumarComanda = getIntent().getIntExtra("NumarComanda", 0);
+                IdClient = getIntent().getIntExtra("Client",0);
 
+                comandaNoua = db.getNrAntet(Integer.toString(NumarComanda));
+                Calendar calendar = Calendar.getInstance();
+                calendar.getTime().setTime(comandaNoua.get_data());
+                aviz = db.getAviz(Integer.toString(NumarComanda));
+                emailDate = calendar;
+                listClient = db.listAllClients();
                 Button btnSendEmail = (Button) findViewById(R.id.btnSendEmailCom);
+                Button btnAddNEwProdus = (Button) findViewById(R.id.btnAddPreviewProdus);
+                if(IdClient==0){
+                    btnAddNEwProdus.setEnabled(false);
+                }
                 ConnectivityManager manager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
 
                 final NetworkInfo mobile = manager.getActiveNetworkInfo();
                 pb= (ProgressBar) findViewById(R.id.progressBar);
                 pb.setVisibility(View.INVISIBLE);
 
-                if (Environment.getExternalStorageState()
-                        .equals(Environment.MEDIA_MOUNTED)) {
-                    Calendar calendar = Calendar.getInstance();
-                    //Date now = new Date(calendar.getTimeInMillis());
-
-                    File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                    path.mkdirs();
-                    denFisier = "F_17314580_numarfactura_"+sdate2.format(date)+"_"+sdate.format(date)+".xml";
-                    file = new File(path, denFisier);
-                }
-
 
                 totalcutva = comandaNoua.get_valTotal()*0.09;
-
-                final List<Client> listClient = db.listAllClients();
-                lstdetalii=db.getDetalii(Integer.toString(numar_comanda));
+                lstdetalii=db.getDetalii(Integer.toString(NumarComanda));
                 if(lstdetalii !=null){
-                        arrayAdapter = new ArrayComanda(getBaseContext(), R.layout.custom_nrlinii_listview, lstdetalii);
 
-                        ListView listView = (ListView) findViewById(R.id.listViewDetaliiComanda);
-                        listView.addHeaderView(setHeader());
-
+                        if(listView!=null){
+                            listView.removeHeaderView(view);
+                            lstdetalii.clear();
+                            lstdetalii.addAll(db.getDetalii(Integer.toString(NumarComanda)));
+                            arrayAdapter.notifyDataSetChanged();
+                            listView.setAdapter(arrayAdapter);
+                            listView.addHeaderView(setHeader());
+                        }else {
+                            arrayAdapter = new ArrayComanda(getBaseContext(), R.layout.custom_nrlinii_listview, lstdetalii);
+                            listView = (ListView) findViewById(R.id.listViewDetaliiComanda);
+                            listView.addHeaderView(setHeader());
+                            listView.setAdapter(arrayAdapter);
+                            arrayAdapter.notifyDataSetChanged();
+                        }
                         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                //Toast.makeText(getBaseContext(),"You've got an event la pozitia "+position,Toast.LENGTH_SHORT).show();
+                                //Log.i( LOG_TAG, "Item click");
                                 detaliiJoin detalii = (detaliiJoin) parent.getItemAtPosition(position);
                                 if(detalii!=null) {
-                                    DialogFragment df = EditDialogFragment.newInstance(detalii.getNrcomanda(), 1, detalii.getLinie(), detalii.getCantitate(),lstdetalii.size());
+                                    DialogFragment df = EditDialogFragment.newInstance(detalii.getNrcomanda(),detalii.getCodprodus(),1, detalii.getLinie(), detalii.getCantitate(),lstdetalii.size());
                                     android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                                     df.show(ft, "DiagEdit");
                                 }
@@ -168,7 +188,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                                 detaliiJoin detalii = (detaliiJoin) parent.getItemAtPosition(position);
                                 if(detalii!=null) {
-                                    DialogFragment df = EditDialogFragment.newInstance(detalii.getNrcomanda(), 0, detalii.getLinie(), 0,lstdetalii.size());
+                                    DialogFragment df = DeleteDialogFragment.newInstance(detalii.getNrcomanda(),detalii.getLinie());
                                     android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                                     df.show(ft, "DiagDelete");
                                 }
@@ -176,126 +196,26 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                             }
                         });
 
-                        listView.setAdapter(arrayAdapter);
                         db.closeDB();
                 }
-                /**
-                Button b = (Button) findViewById(R.id.);
-                b.setOnClickListener(new View.OnClickListener() {
+
+                btnAddNEwProdus.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        DialogFragment dialogFragment = AddDialogFragment.newInstance(NumarComanda,IdClient);
+                        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                        dialogFragment.show(ft,"Dialog Add");
                     }
                 });
-                */
+
                 btnSendEmail.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if(mobile !=null) {
                             if(mobile.isConnected()) {
-                                try {
-                                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance(
-                                            System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
-                                    XmlSerializer serializer = factory.newSerializer();
-                                    outputStream = new BufferedOutputStream(new FileOutputStream(file));
-
-                                    serializer.setOutput(outputStream,"UTF-8");
-                                    serializer.startDocument("UTF-8", null);
-
-                                    Client findClient=null;
-                                    for(Client item : listClient){
-                                        if (item.getID()==comandaNoua.get_id_client()){
-                                            findClient = item;
-                                        }
-                                    }
-
-
-                                    serializer.startTag(null, "Factura");
-                                            serializer.startTag(null, "Antet");
-                                                        serializer.startTag(null,"FurnizorNume").text("S.C. ALEXPAN S.R.L").endTag(null, "FurnizorNume");
-                                                        serializer.startTag(null,"FurnizorCIF").text("RO17314580").endTag(null,"FurnizorCIF");
-                                                        serializer.startTag(null,"FurnizorNrRegCom").text("J05/489/2005").endTag(null, "FurnizorNrRegCom");
-                                                        serializer.startTag(null,"FurnizorCapital").text("884232.00").endTag(null, "FurnizorCapital");
-                                                        serializer.startTag(null,"FurnizorAdresa").text("VASCAU str. CRISULUI nr. 1 jud. BIHOR").endTag(null,"FurnizorAdresa");
-                                                        serializer.startTag(null,"FurnizorBanca").text("BANC POST").endTag(null, "FurnizorBanca");
-                                                        serializer.startTag(null,"FurnizorIBAN").text("RO32BPOS05306505272RON01").endTag(null,"FurnizorIBAN");
-                                                        serializer.startTag(null,"FurnizorInformatiiSuplimentare").text("Banca BANC POST IBAN RO32BPOS05306505272RON01").endTag(null, "FurnizorInformatiiSuplimentare");
-
-                                                        if(findClient!=null){
-                                                            serializer.startTag(null,"ClientNume").text(findClient.getNume()).endTag(null,"ClientNume");
-                                                            serializer.startTag(null, "ClientInformatiiSuplimentare").endTag(null,"ClientInformatiiSuplimentare");
-                                                            serializer.startTag(null,"ClientCIF").text(findClient.getCif()).endTag(null,"ClientCIF");
-                                                           // serializer.startTag(null,"ClientNrRegCom").text(findClient.getNrReg()).endTag(null,"ClientNrRegCom");
-                                                            //serializer.startTag(null,"ClientAdresa").text(findClient.getAdresa()).endTag(null,"ClientAdresa");
-                                                          //  serializer.startTag(null, "ClientBanca").endTag(null,"ClientBanca");
-                                                           // serializer.startTag(null,"ClientIBAN").text(findClient.getIban()).endTag(null,"ClientIBAN");
-                                                        }
-
-                                                        serializer.startTag(null,"FacturaNumar").text("1").endTag(null, "FacturaNumar");
-                                                        serializer.startTag(null,"FacturaData").text(sdate2.format(date)).endTag(null, "FacturaData");
-                                                        serializer.startTag(null,"FacturaScadenta").text(sdate2.format(date)).endTag(null, "FacturaScadenta");
-                                                        serializer.startTag(null,"FacturaTaxareInversa").text("Nu").endTag(null, "FacturaTaxareInversa");
-                                                        serializer.startTag(null,"FacturaTVAIncasare").text("Nu").endTag(null, "FacturaTVAIncasare");
-                                                        serializer.startTag(null, "FacturaInformatiiSuplimentare").endTag(null, "FacturaInformatiiSuplimentare");
-                                                        serializer.startTag(null,"FacturaMoneda").text("RON").endTag(null, "FacturaMoneda");
-                                                        serializer.startTag(null,"FacturaCotaTVA").text("TVA (9%)").endTag(null, "FacturaCotaTVA");
-                                                        serializer.startTag(null,"FacturaGreutate").text("0.000").endTag(null, "FacturaGreutate");
-                                            serializer.endTag(null, "Antet");
-
-                                           serializer.startTag(null, "Detalii");
-                                                        serializer.startTag(null, "Continut");
-                                                                    for(detaliiJoin linii : lstdetalii){
-                                                                        serializer.startTag(null, "Linie");
-                                                                              serializer.startTag(null,"LinieNrCrt").text(""+linii.getLinie()).endTag(null, "LinieNrCrt");
-                                                                              serializer.startTag(null,"Descriere").text(linii.getDenProdus()).endTag(null, "Descriere");
-                                                                              serializer.startTag(null, "CodArticolFurnizor").text(""+linii.getCdProdus()).endTag(null, "CodArticolFurnizor");
-                                                                              serializer.startTag(null,"CodArticolClient").endTag(null, "CodArticolClient");
-                                                                              serializer.startTag(null,"CodBare").endTag(null, "CodBare");
-                                                                              serializer.startTag(null, "InformatiiSuplimentare").endTag(null, "InformatiiSuplimentare");
-                                                                              serializer.startTag(null,"UM").text("BUC").endTag(null, "UM");
-                                                                              serializer.startTag(null,"Cantitate").text(""+linii.getCantitate()).endTag(null, "Cantitate");
-                                                                              serializer.startTag(null,"Pret").text(""+linii.getPret()).endTag(null, "Pret");
-                                                                              serializer.startTag(null,"Valoare").text(""+linii.getValoare()).endTag(null, "Valoare");
-                                                                              serializer.startTag(null,"TVA").text(""+linii.getTva()).endTag(null, "TVA");
-                                                                        serializer.endTag(null,"Linie");
-                                                                    }
-                                                        serializer.endTag(null, "Continut");
-
-                                                        serializer.startTag(null, "txtObservatii1");
-                                                                    serializer.text("DECLARATIE DE CONFORMITATE:Noi.SC ALEXPAN SRL," +
-                                                                            "declaram pe proprie raspundere ca produsele livrate cu " +
-                                                                            "prezentul document sunt in conformitate cu standardele de " +
-                                                                            "firma si sunt fabricate sub control sanitar-veterinar");
-                                                        serializer.endTag(null, "txtObservatii1");
-                                            serializer.endTag(null, "Detalii");
-
-                                            serializer.startTag(null, "Sumar");
-                                                        serializer.startTag(null,"TotalValoare").text(""+comandaNoua.get_valTotal()).endTag(null, "TotalValoare");
-                                                        serializer.startTag(null,"TotalTVA").text(""+totalcutva).endTag(null, "TotalTVA");
-                                                        serializer.startTag(null,"Total").text(""+totalcutva+comandaNoua.get_valTotal()).endTag(null, "Total");
-                                            serializer.endTag(null, "Sumar");
-
-                                            serializer.startTag(null, "Observatii");
-                                                        serializer.startTag(null,"txtObservatii").text("").endTag(null, "txtObservatii");
-                                                        serializer.startTag(null, "SoldClient").endTag(null,"SoldClient");
-                                                        serializer.startTag(null,"ModalitatePlata").endTag(null,"ModalitatePlata");
-                                            serializer.endTag(null,"Observatii");
-                                    serializer.endTag(null, "Factura");
-                                    serializer.endDocument();
-
-                                    serializer.flush();
-                                    outputStream.close();
-
-                                } catch (XmlPullParserException xml){
-                                    xml.printStackTrace();
-                                } catch (IOException io){
-                                    io.printStackTrace();
-                                }
-
-                                String[] accountTypes = new String[]{"com.google"};
-                                Intent intent = AccountPicker.newChooseAccountIntent(null, null,
-                                        accountTypes, false, null, null, null, null);
-                                startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+                                //Toast.makeText(getBaseContext(), "avem atitea elemente" + lstdetalii.size(), Toast.LENGTH_LONG).show();
+                                //sendmail();
+                                pickacount();
                             }
                         }else{
                             Toast.makeText(getBaseContext(), "NU AVETI ACCES LA INTERNET!!!", Toast.LENGTH_LONG).show();
@@ -305,15 +225,13 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 });
     }
 
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == REQUEST_CODE_PICK_ACCOUNT) {
             if (resultCode == RESULT_OK) {
                 acount = new Account(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME),
                         data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
-                new SendMail(TO,FROM,SUBJECT,BODYTEXT).execute();
+                        sendmail();
 
             }else  {
                //
@@ -323,32 +241,228 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
         }
     }
 
+    public void pickacount(){
+        String[] accountTypes = new String[]{"com.google"};
+        Intent intent = AccountPicker.newChooseAccountIntent(null, null,
+                accountTypes, false, null, null, null, null);
+        startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+    }
 
+    public void sendmail(){
+        //Toast.makeText(getBaseContext(), "inceput sendmail + " + lstdetalii.size(), Toast.LENGTH_LONG).show();
+        //aviz = db1.getAviz(Integer.toString(NumarComanda));
+        //lstdetalii=db1.getDetalii(Integer.toString(NumarComanda));
+        Calendar calendar = Calendar.getInstance();
+        calendar.getTime().setTime(comandaNoua.get_data());
+
+        if (Environment.getExternalStorageState()
+                .equals(Environment.MEDIA_MOUNTED)) {
+
+            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            path.mkdirs();
+
+            String[] splitTab = acount.name.split("[@._]");
+            String split="";
+
+            if(splitTab[1].contains("gmail")){
+                split = splitTab[0];
+            }else{
+                split = splitTab[1];
+            }
+            denFisier = "F_17314580_"+comandaNoua.get_nrCom()+"_"+sdate2.format(calendar.getTime())+"_"+split+".xml";
+            file = new File(path, denFisier);
+        }
+        try {
+            XmlPullParserFactory factory = XmlPullParserFactory.newInstance(
+                    System.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
+            XmlSerializer serializer = factory.newSerializer();
+            outputStream = new BufferedOutputStream(new FileOutputStream(file));
+
+            serializer.setOutput(outputStream,"UTF-8");
+            serializer.startDocument("UTF-8", null);
+
+            Client findClient=null;
+            for(Client item : listClient){
+                if (item.getID()==comandaNoua.get_id_client()){
+                    findClient = item;
+                }
+            }
+
+            serializer.startTag(null, "Factura");
+            serializer.startTag(null, "Antet");
+            serializer.startTag(null,"FurnizorNume").text("S.C. ALEXPAN S.R.L").endTag(null, "FurnizorNume");
+            serializer.startTag(null,"FurnizorCIF").text("RO17314580").endTag(null,"FurnizorCIF");
+            serializer.startTag(null,"FurnizorNrRegCom").text("J05/489/2005").endTag(null, "FurnizorNrRegCom");
+            serializer.startTag(null,"FurnizorCapital").text("884232.00").endTag(null, "FurnizorCapital");
+            serializer.startTag(null,"FurnizorAdresa").text("VASCAU str. CRISULUI nr. 1 jud. BIHOR").endTag(null,"FurnizorAdresa");
+            serializer.startTag(null,"FurnizorBanca").text("BANC POST").endTag(null, "FurnizorBanca");
+            serializer.startTag(null,"FurnizorIBAN").text("RO32BPOS05306505272RON01").endTag(null,"FurnizorIBAN");
+            serializer.startTag(null,"FurnizorInformatiiSuplimentare").text("Banca BANC POST IBAN RO32BPOS05306505272RON01").endTag(null, "FurnizorInformatiiSuplimentare");
+
+            if(findClient!=null){
+                serializer.startTag(null,"ClientNume").text(findClient.getNume()).endTag(null,"ClientNume");
+                serializer.startTag(null, "ClientInformatiiSuplimentare").endTag(null,"ClientInformatiiSuplimentare");
+                serializer.startTag(null,"ClientCIF").text(findClient.getCif()).endTag(null,"ClientCIF");
+                serializer.startTag(null,"ClientNrRegCom").text(findClient.getNrReg()).endTag(null,"ClientNrRegCom");
+                serializer.startTag(null,"ClientAdresa").text(findClient.getAdresa()).endTag(null,"ClientAdresa");
+                //  serializer.startTag(null, "ClientBanca").endTag(null,"ClientBanca");
+                // serializer.startTag(null,"ClientIBAN").text(findClient.getIban()).endTag(null,"ClientIBAN");
+            }
+
+            serializer.startTag(null,"FacturaNumar").text("1").endTag(null, "FacturaNumar");
+            serializer.startTag(null,"FacturaData").text(sdate2.format(emailDate.getTime())).endTag(null, "FacturaData");
+            serializer.startTag(null,"FacturaScadenta").text(sdate2.format(emailDate.getTime())).endTag(null, "FacturaScadenta");
+            serializer.startTag(null,"FacturaTaxareInversa").text("Nu").endTag(null, "FacturaTaxareInversa");
+            serializer.startTag(null,"FacturaTVAIncasare").text("Nu").endTag(null, "FacturaTVAIncasare");
+            serializer.startTag(null, "FacturaInformatiiSuplimentare").endTag(null, "FacturaInformatiiSuplimentare");
+            serializer.startTag(null,"FacturaMoneda").text("RON").endTag(null, "FacturaMoneda");
+            serializer.startTag(null,"FacturaCotaTVA").text("TVA (9%)").endTag(null, "FacturaCotaTVA");
+            serializer.startTag(null,"FacturaGreutate").text("0.000").endTag(null, "FacturaGreutate");
+            serializer.endTag(null, "Antet");
+
+            serializer.startTag(null, "Detalii");
+            serializer.startTag(null, "Continut");
+
+            for(detaliiJoin linii : lstdetalii){
+                serializer.startTag(null, "Linie");
+                //Toast.makeText(getBaseContext(), "loop detalii !!! "+ linii.getCodprodus(), Toast.LENGTH_LONG).show();
+                serializer.startTag(null,"LinieNrCrt").text(""+linii.getLinie()).endTag(null, "LinieNrCrt");
+                serializer.startTag(null,"Descriere").text(linii.getDenProdus()).endTag(null, "Descriere");
+                serializer.startTag(null, "CodArticolFurnizor").text(linii.getCodProdus()).endTag(null, "CodArticolFurnizor");
+                serializer.startTag(null,"CodArticolClient").endTag(null, "CodArticolClient");
+                serializer.startTag(null,"CodBare").endTag(null, "CodBare");
+                serializer.startTag(null, "InformatiiSuplimentare").endTag(null, "InformatiiSuplimentare");
+                serializer.startTag(null,"UM").text("BUC").endTag(null, "UM");
+                serializer.startTag(null,"Cantitate").text(""+linii.getCantitate()).endTag(null, "Cantitate");
+                serializer.startTag(null,"Pret").text(""+linii.getPret()).endTag(null, "Pret");
+                serializer.startTag(null,"Valoare").text(""+linii.getValoare()).endTag(null, "Valoare");
+                serializer.startTag(null,"ProcTVA").text("9").endTag(null, "ProcTVA");
+                serializer.startTag(null,"TVA").text(""+linii.getTva()).endTag(null, "TVA");
+                serializer.endTag(null,"Linie");
+            }
+            serializer.endTag(null, "Continut");
+
+            serializer.startTag(null, "txtObservatii1");
+            serializer.text("DECLARATIE DE CONFORMITATE:Noi.SC ALEXPAN SRL," +
+                    "declaram pe proprie raspundere ca produsele livrate cu " +
+                    "prezentul document sunt in conformitate cu standardele de " +
+                    "firma si sunt fabricate sub control sanitar-veterinar");
+            serializer.endTag(null, "txtObservatii1");
+            serializer.endTag(null, "Detalii");
+
+            serializer.startTag(null, "Sumar");
+            serializer.startTag(null,"TotalValoare").text(""+comandaNoua.get_valTotal()).endTag(null, "TotalValoare");
+            serializer.startTag(null,"TotalTVA").text(""+totalcutva).endTag(null, "TotalTVA");
+            serializer.startTag(null,"Total").text(""+totalcutva+comandaNoua.get_valTotal()).endTag(null, "Total");
+            serializer.endTag(null, "Sumar");
+
+            serializer.startTag(null, "Observatii");
+            serializer.startTag(null,"txtObservatii").text("").endTag(null, "txtObservatii");
+            serializer.startTag(null, "SoldClient").endTag(null,"SoldClient");
+            serializer.startTag(null,"ModalitatePlata").endTag(null,"ModalitatePlata");
+            serializer.endTag(null,"Observatii");
+            serializer.endTag(null, "Factura");
+            serializer.endDocument();
+
+            serializer.flush();
+            outputStream.close();
+
+            fileAviz = new File(createAvizFile(emailDate.getTime().getTime()));
+
+            new SendMail(TO,FROM,SUBJECT,BODYTEXT_ANTET+BODYTEXT).execute();
+
+        } catch (XmlPullParserException e){
+            Log.e(TAG,"A aparut o eroare ",e.getCause());
+            Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+        } catch (IOException e){
+            Log.e(TAG,"A aparut o eroare ",e.getCause());
+            Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+
+    }
 
     /** Implementeaza Interfata din Fragment Dialog  *************************************/
     @Override
-    public void onEdit(int nrcomanda,int nrlinie,int cant,int codpr,double pretprodus) {
+    public boolean onEdit(int nrcomanda,int nrlinie,int cant,int codpr,double pretprodus,int codVechi) {
                 DBhelper db = new DBhelper(getBaseContext());
                 db.openDB();
-                ListView listView1 = (ListView) findViewById(R.id.listViewDetaliiComanda);
-               //Toast.makeText(getBaseContext(), "" + pretprodus, Toast.LENGTH_LONG).show();
-                if((db.updatePreview(nrcomanda, nrlinie, cant, pretprodus,codpr) > 0)) {
-                        comandaNoua = db.getNrAntet(Integer.toString(nrcomanda));
-                        listView1.removeHeaderView(view);
-                        lstdetalii.clear();
-                        lstdetalii.addAll(db.getDetalii(Integer.toString(nrcomanda)));
-                        arrayAdapter.notifyDataSetChanged();
-                        listView1.addHeaderView(setHeader());
-                }
-                db.closeDB();
-    }
+                if(checkDuplicates(cant,codpr,codVechi)) {
+                    Toast.makeText(getBaseContext(), "Acest produs este deja introdus!!!", Toast.LENGTH_LONG).show();
+                    db.closeDB();
+                    return true;
+                }else{
+                    if((db.updatePreview(nrcomanda, nrlinie, cant, pretprodus,codpr) > 0)) {
+                            comandaNoua = db.getNrAntet(Integer.toString(nrcomanda));
+                            aviz = db.getAviz(Integer.toString(NumarComanda));
+                            listView.removeHeaderView(view);
+                            lstdetalii.clear();
+                            lstdetalii.addAll(db.getDetalii(Integer.toString(nrcomanda)));
+                            arrayAdapter.notifyDataSetChanged();
+                            listView.addHeaderView(setHeader());
+                            db.closeDB();
+                            return false;
+                    }else{
+                           return true;
+                    }
 
+                }
+    }
 
     @Override
     public void onDelete(int nrcomanda,int nrlinie) {
-        Toast.makeText(getBaseContext(), "Sterge Comanda!!! " + nrlinie, Toast.LENGTH_LONG).show();
+        DBhelper db = new DBhelper(getBaseContext());
+        db.openDB();
+                //Toast.makeText(getBaseContext(), "" + pretprodus, Toast.LENGTH_LONG).show();
+        if((db.deleteLineProduct(nrcomanda, nrlinie) > 0)) {
+                    comandaNoua = db.getNrAntet(Integer.toString(nrcomanda));
+                    aviz = db.getAviz(Integer.toString(NumarComanda));
+                    listView.removeHeaderView(view);
+                    lstdetalii.clear();
+                    lstdetalii.addAll(db.getDetalii(Integer.toString(nrcomanda)));
+                    listView.setAdapter(arrayAdapter);
+                    arrayAdapter.notifyDataSetChanged();
+                    listView.addHeaderView(setHeader());
+
+        }
+        db.closeDB();
     }
 
+    @Override
+    public void onAdd(int nrcomanda, int cant, int codpr, double pretprodus) {
+                DBhelper db = new DBhelper(getBaseContext());
+                db.openDB();
+                //Toast.makeText(getBaseContext(), "Acum linie = " + NrLinie, Toast.LENGTH_LONG).show();
+                if(checkDuplicates(cant,codpr,0)) {
+
+                }else{
+                    NrLinie=NrLinie+1;
+                    //Toast.makeText(getBaseContext(), "Acest produs este deja introdus!!!", Toast.LENGTH_LONG).show();
+                    double val = patruzeci(cant * pretprodus);
+
+                    detaliiJoin detalii = new detaliiJoin();
+
+                    detalii.setCodprodus(codpr);
+                    detalii.setPret(patruzeci(pretprodus));
+                    detalii.setNrcomanda(NumarComanda);
+                    detalii.setCantitate(cant);
+                    detalii.setValoare(patruzeci(val));
+                    detalii.setTva(detalii.getValoare()*0.09);
+                    detalii.setLinie(NrLinie);
+
+                    db.addDetalii(detalii);
+
+                    aviz = db.getAviz(Integer.toString(NumarComanda));
+                    comandaNoua = db.getNrAntet(Integer.toString(nrcomanda));
+                    listView.removeHeaderView(view);
+                    lstdetalii.clear();
+                    lstdetalii.addAll(db.getDetalii(Integer.toString(nrcomanda)));
+                    arrayAdapter.notifyDataSetChanged();
+                    listView.addHeaderView(setHeader());
+
+                }
+        db.closeDB();
+    }
 
     /**Genereaza Lista HEADER ***********************************************************/
     public  View setHeader(){
@@ -356,8 +470,8 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 LayoutInflater inflater = getLayoutInflater();
                 view=inflater.inflate(R.layout.list_header_detalii,parent,false);
 
-                java.util.Date date = new java.util.Date();
-                date.setTime(comandaNoua.get_data());
+                Calendar calendar = Calendar.getInstance();
+                calendar.getTime().setTime(comandaNoua.get_data());
 
                 if(comandaNoua.get_client()!="") {
                     TextView denumire = (TextView) view.findViewById(R.id.header_beneficiar);
@@ -367,7 +481,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
 
                     denumire.setText(comandaNoua.get_client());
                     nrcom.setText(Integer.toString(comandaNoua.get_nrCom()));
-                    datac.setText(sdate2.format(date));
+                    datac.setText(sdate2.format(calendar.getTime()));
                     valTotal.setText(Double.toString(comandaNoua.get_valTotal()));
                 }
                 return view;
@@ -403,6 +517,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                     TextView pretProdus = (TextView) convertView.findViewById(R.id.detalii_PretProdus);
                     TextView valProdus = (TextView) convertView.findViewById(R.id.detalii_ValoareProdus);
 
+                    denProdus.setMaxLines(2);
                     denProdus.setText(detalii.getDenProdus());
                     cantitateProdus.setText(Integer.toString(detalii.getCantitate()));
                     pretProdus.setText(Double.toString(detalii.getPret()));
@@ -411,25 +526,176 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 }
     }
 
+    public String createAvizFile(long dataaviz){
+        DBhelper dBhelper = new DBhelper(getBaseContext());
+        //Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdate = new SimpleDateFormat("dd-MM-yyy");
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File file = null;
+        BODYTEXT = "";
+        if (Environment.getExternalStorageState()
+                .equals(Environment.MEDIA_MOUNTED)) {
+            try {
+                String[] splitTab = acount.name.split("[@._]");
+                String split="";
 
-    /**Creaza Fereastra Dialog Custom ***************************************************/
+                if(splitTab[1].contains("gmail")){
+                    split = splitTab[0];
+                }else{
+                    split = splitTab[1];
+                }
+                file = new File(path.getAbsolutePath(),"Aviz_"+split+"_"+sdate.format(dataaviz)+".txt");
+                //OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+                //outputStream.write();
+                FileWriter fileWriter = new FileWriter(file);
+                for(Aviz linii : aviz) {
+                    fileWriter.write("\"" + linii.getCodprodus() + "\"");
+                    fileWriter.write(",");
+                    fileWriter.write("\"" + linii.getDenProdus() + "\"");
+                    fileWriter.write(",");
+                    fileWriter.write("\"BUC\"");
+                    fileWriter.write(",");
+                    fileWriter.write(Integer.toString(linii.getCantitate()) + ".0000");
+                    fileWriter.write(",");
+                    fileWriter.write(String.valueOf(linii.getPret()) + "00");
+                    fileWriter.write(",");
+                    fileWriter.write(String.valueOf(linii.getValoare()));
+                    fileWriter.write(",");
+                    fileWriter.write("0.0000");
+                    fileWriter.write(",");
+                    fileWriter.write("\"\"");
+                    fileWriter.write(",");
+                    fileWriter.write("\"\"");
+                    fileWriter.write(",");
+                    fileWriter.write("0.0000");
+                    fileWriter.write(",");
+                    fileWriter.write("0.00");
+                    fileWriter.write("\r\n");
+                    BODYTEXT += linii.getCodprodus() + " |" + linii.getDenProdus() + " Cantitate totala : " + linii.getCantitate() + "\r\n";
+                }
+                fileWriter.flush();
+                fileWriter.close();
+            } catch (IOException e) {
+                Log.e(TAG,"A aparut o eroare ",e.getCause());
+                Toast.makeText(getBaseContext(),"Eroare scriere aviz : "+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        }else {
+            Toast.makeText(getBaseContext(), "Nu pot scrie in director fisierul comanda!!!", Toast.LENGTH_SHORT).show();
+            file = new File(path.getAbsolutePath(),"filerror.err");
+        }
+        return file.getAbsolutePath();
+    }
+
+/** Creaza Dialog Adaugare Produse */
+    public static class AddDialogFragment extends DialogFragment {
+                int numarComanda;
+                int idClient;
+                int codprodus;
+                double pret;
+
+                onEditDeleteDialogDetalii callback;
+
+                public AddDialogFragment() {
+                }
+
+                static AddDialogFragment newInstance(int nrcomanda,int idclient) {
+                      AddDialogFragment dialog = new AddDialogFragment();
+                      Bundle args = new Bundle();
+                      args.putInt("COMANDA",nrcomanda);
+                      args.putInt("IDCLIENT",idclient);
+                      dialog.setArguments(args);
+                      return  dialog;
+                }
+
+                @Override
+                public void onCreate(@Nullable Bundle savedInstanceState) {
+                    super.onCreate(savedInstanceState);
+                    numarComanda = getArguments().getInt("COMANDA");
+                    idClient = getArguments().getInt("IDCLIENT");
+                }
+
+                @NonNull
+                @Override
+                public Dialog onCreateDialog(Bundle savedInstanceState) {
+                    final int cantitate=0;
+                    LayoutInflater layoutInflater = getActivity().getLayoutInflater();
+                    View v = layoutInflater.inflate(R.layout.preview_add_produse,null);
+                    final EditText cantiEdit = (EditText) v.findViewById(R.id.editTextCantitatePreviewProdusNou);
+                    DBhelper db = new DBhelper(getContext());
+                    db.openDB();
+
+                    List<CoduriProduse> ProdusePreview = db.listAllProducts();
+                    final Spinner spiner= (Spinner) v.findViewById(R.id.spinnerPreviewAddProduse);
+                    ComandaNouaProdus.CustomSpinnerAdapter previewSpinnderAdapter = new ComandaNouaProdus.CustomSpinnerAdapter(getContext(),R.layout.custom_spinner_produse,ProdusePreview);
+                    spiner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        CoduriProduse itemSelected;
+                        @Override
+                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                            itemSelected = (CoduriProduse) parent.getItemAtPosition(position);
+                            codprodus = itemSelected.getID();
+                            pret = itemSelected.getPret();
+                        }
+
+                        @Override
+                        public void onNothingSelected(AdapterView<?> parent) {
+                            return;
+                        }
+                    });
+
+                    spiner.setAdapter(previewSpinnderAdapter);
+                    db.closeDB();
+
+                    return new AlertDialog.Builder(getActivity())
+                            .setTitle("Adauga produs la comanda")
+                            .setView(v)
+                            .setPositiveButton("Adauga", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if(!cantiEdit.getText().toString().trim().isEmpty()) {
+                                            callback.onAdd(numarComanda,Integer.parseInt(cantiEdit.getText().toString().trim()),codprodus,pret);
+                                    }
+                                }
+                            })
+                            .setNegativeButton("Anuleaza", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            })
+                            .create();
+                }
+
+                @Override
+                public void onAttach(Activity activity) {
+                    super.onAttach(activity);
+                    try{
+                        callback = (onEditDeleteDialogDetalii) activity;
+                    }catch (ClassCastException ce){
+                        throw new ClassCastException("Calling Fragment must implement onEditDelete Interface");
+                    }
+                }
+}
+
+    /**Creaza Fereastra Dialog Custom Dialog ***************************************************/
     public static class EditDialogFragment extends DialogFragment {
                 int initNrCom;
                 int statusCom;
                 int nr_linie;
                 int cantitate;
-                int codprodus;
+                int cod_produs;
+                int selected_produs;
                 double pret;
                 int FULL;
+                int seli=0;
+                int item =0;
                 onEditDeleteDialogDetalii callback;
+
 
                 /** Empty constructor *****************************/
                 public EditDialogFragment() {
+
                 }
-
-
-                /** Retunreaza o noua fereastra cu argument*/
-                static EditDialogFragment newInstance(int nrcomanda,int status,int nrlinie,int cantitateCom,int full){
+                static EditDialogFragment newInstance(int nrcomanda,int codprodus,int status,int nrlinie,int cantitateCom,int full){
                           EditDialogFragment f = new EditDialogFragment();
                           Bundle args = new Bundle();
                           if(status==0) {
@@ -439,6 +705,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                           }
                           args.putInt("NR_LINIE",nrlinie);
                           args.putInt("NR_COMANDA", nrcomanda);
+                          args.putInt("COD_PRODUS",codprodus);
                           args.putInt("CANTITATE",cantitateCom);
                           args.putInt("FULL",full);
                           f.setArguments(args);
@@ -449,12 +716,12 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 public void onCreate(Bundle savedInstanceState) {
                         super.onCreate(savedInstanceState);
                         initNrCom = getArguments().getInt("NR_COMANDA");
+                        cod_produs = getArguments().getInt("COD_PRODUS");
                         statusCom = getArguments().getInt("Status");
                         nr_linie = getArguments().getInt("NR_LINIE");
                         cantitate = getArguments().getInt("CANTITATE");
                         FULL = getArguments().getInt("FULL");
                 }
-
 
                 @Override
                 public View onCreateView(LayoutInflater inflater,  ViewGroup container,  Bundle savedInstanceState) {
@@ -466,26 +733,43 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                         db.openDB();
 
                         List<CoduriProduse> ProdusePreview = db.listAllProducts();
-                        Spinner spiner = (Spinner) v.findViewById(R.id.spinnerPreviewDialog);
+                        final Spinner spiner= (Spinner) v.findViewById(R.id.spinnerPreviewDialog);
                         ComandaNouaProdus.CustomSpinnerAdapter previewSpinnderAdapter = new ComandaNouaProdus.CustomSpinnerAdapter(getContext(),R.layout.custom_spinner_produse,ProdusePreview);
 
                         if(FULL==ProdusePreview.size()){
                             spiner.setEnabled(false);
                         }
-                        spiner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                            @Override
-                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                CoduriProduse itemSelected;
-                                itemSelected = (CoduriProduse) parent.getItemAtPosition(position);
-                                codprodus = itemSelected.getID();
-                                pret = itemSelected.getPret();
-                                Toast.makeText(getContext(), "" + codprodus, Toast.LENGTH_LONG).show();
-                            }
 
-                            @Override
-                            public void onNothingSelected(AdapterView<?> parent) {
-                                return;
-                            }
+                        //int[] tablou = new int[3];
+
+                        for(int seli=0;seli<previewSpinnderAdapter.getCount(); seli++){
+                            //Toast.makeText(getContext(), "item :"+previewSpinnderAdapter.getItem(seli).getID(), Toast.LENGTH_SHORT).show();
+                                      if(cod_produs==previewSpinnderAdapter.getItem(seli).getID()){
+                                          item=seli;
+                                          break;
+                                      }
+                        }
+                    spiner.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            spiner.setSelection(item);
+                        }
+                    });
+                        spiner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                CoduriProduse itemSelected;
+
+                                @Override
+                                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                    itemSelected = (CoduriProduse) parent.getItemAtPosition(position);
+                                    selected_produs = itemSelected.getID();
+                                    pret = itemSelected.getPret();
+                                }
+
+                                @Override
+                                public void onNothingSelected(AdapterView<?> parent) {
+
+                                    return;
+                                }
                         });
 
                         spiner.setAdapter(previewSpinnderAdapter);
@@ -496,13 +780,25 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                             @Override
                             public void onClick(View v) {
                                    if(!valCant.getText().toString().trim().isEmpty()) {
-                                       callback.onEdit(initNrCom, nr_linie, Integer.parseInt(valCant.getText().toString().trim()), codprodus,pret);
-                                       dialog.dismiss();
+
+                                             if(callback.onEdit(initNrCom, nr_linie, Integer.parseInt(valCant.getText().toString().trim()), selected_produs,pret,cod_produs)){
+
+                                             }else{
+                                                 dialog.dismiss();
+                                             }
                                    }else{
                                        Toast.makeText(getContext(), "Nu ati introdus cantitatea!!!", Toast.LENGTH_LONG).show();
                                        return;
                                    }
                             }
+                        });
+
+                        Button btnCancel = (Button) v.findViewById(R.id.btnCancelPreviewDialog);
+                            btnCancel.setOnClickListener(new View.OnClickListener() {
+                             @Override
+                             public void onClick(View v) {
+                                  dialog.dismiss();
+                             }
                         });
                         db.closeDB();
                         return v;
@@ -521,12 +817,99 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
     }
 
 
-    public void sendEmail(){
-        String[] accountTypes = new String[]{"com.google"};
-        Intent intent = AccountPicker.newChooseAccountIntent(null, null,
-                accountTypes, false, null, null, null, null);
-        startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+
+    /**Creaza Fereastra Delete Custom Dialog */
+    public static class DeleteDialogFragment extends DialogFragment{
+                int initNrCom;
+                int nr_linie;
+                onEditDeleteDialogDetalii callback;
+
+                //Empty constructor
+                public DeleteDialogFragment() {
+                }
+
+                /** Retunreaza o noua fereastra cu argument*/
+                static DeleteDialogFragment newInstance(int nrcomanda,int nrlinie){
+                    DeleteDialogFragment f = new DeleteDialogFragment();
+                    Bundle args = new Bundle();
+                    args.putInt("NR_LINIE",nrlinie);
+                    args.putInt("NR_COMANDA", nrcomanda);
+                    f.setArguments(args);
+                    return f;
+                }
+
+                @Override
+                public void onCreate(Bundle savedInstanceState) {
+                    super.onCreate(savedInstanceState);
+                    initNrCom = getArguments().getInt("NR_COMANDA");
+                    nr_linie = getArguments().getInt("NR_LINIE");
+                }
+
+                @NonNull
+                @Override
+                public Dialog onCreateDialog(Bundle savedInstanceState) {
+                    return new AlertDialog.Builder(getActivity())
+                            .setTitle("Stergere Produs")
+                            .setMessage("Doriti sa stergeti produsul: ")
+                            .setPositiveButton("Sterge", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //callback.onDelProdusItem(codprodus);
+                                    callback.onDelete(initNrCom,nr_linie);
+
+                                }
+                            })
+                            .setNegativeButton("Anuleaza", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            })
+                            .create();
+                }
+
+                @Override
+                public void onAttach(Activity activity) {
+                    super.onAttach(activity);
+                    try{
+                        callback = (onEditDeleteDialogDetalii) activity;
+                    }catch (ClassCastException ce){
+                        throw new ClassCastException("Calling Fragment must implement onEditDelete Interface");
+                    }
+                }
     }
+
+
+    public boolean checkDuplicates(int cantitate,int produs,int cod_vechi) {
+        DBhelper dBhelper = new DBhelper(getBaseContext());
+        dBhelper.openDB();
+        int counter=1;
+        boolean findit=false;
+        detaliiJoin LastObject = new detaliiJoin();
+        List<detaliiJoin> mata = dBhelper.getDetalii(Integer.toString(NumarComanda));
+
+        //Toast.makeText(getBaseContext(), "Ultima linie este :" + LastObject.getLinie(), Toast.LENGTH_LONG).show();
+        if (mata.isEmpty()) {
+            return  false;
+        } else {
+            LastObject = mata.get(mata.size()-1);
+            NrLinie = LastObject.getLinie();
+            if(cantitate!=0){
+                if(cod_vechi==produs){
+                    return false;
+                }else{
+                    for(detaliiJoin item : mata ){
+                        if (item.getCodprodus() == produs) {
+                            findit = true;
+                        }
+                    }
+                    return findit;
+                }
+            }else {return true; }
+        }
+        //return findit;
+    }
+
 
     public class SendMail extends AsyncTask<Void,Void,Void> {
         final String to;
@@ -557,18 +940,37 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            DBhelper dBhelper = new DBhelper(getBaseContext());
+            dBhelper.openDB();
+            lstdetalii.addAll(dBhelper.getDetalii(Integer.toString(NumarComanda)));
             pb.setVisibility(View.VISIBLE);
+            dBhelper.closeDB();
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             pb.setVisibility(View.INVISIBLE);
+            DBhelper dBhelper = new DBhelper(getBaseContext());
+            dBhelper.openDB();
+
+            listView.removeHeaderView(view);
+            lstdetalii.clear();
+            lstdetalii.addAll(dBhelper.getDetalii(Integer.toString(NumarComanda)));
+            listView.setAdapter(arrayAdapter);
+            arrayAdapter.notifyDataSetChanged();
+            listView.addHeaderView(setHeader());
+
             if(messageId!=null){
                 Toast.makeText(getBaseContext(), "Mail trimis cu succes !!!", Toast.LENGTH_LONG).show();
+                if(fileAviz.exists() && file.exists()){
+                    fileAviz.delete();
+                    file.delete();
+                }
             }else{
                 Toast.makeText(getBaseContext(), "Eroare Trimitere mesaj !!!", Toast.LENGTH_LONG).show();
             }
+            dBhelper.closeDB();
         }
 
         @Override
@@ -591,23 +993,39 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                  *  PARTEA DE UPLOAD CU ATASAMENT ***************************************************************/
 
                 MimeBodyPart mimeBodyPart = new MimeBodyPart();
-                mimeBodyPart.setContent("testbody", "text/plain");
+                mimeBodyPart.setContent(btext, "text/plain");
                 mimeBodyPart.setHeader("Content-Type", "text/plain; charset=\"UTF-8\"");
 
                 Multipart multipart = new MimeMultipart();
                 multipart.addBodyPart(mimeBodyPart);
 
+                MimeBodyPart atachepart = new MimeBodyPart();
+                MimeBodyPart atachepart1 = new MimeBodyPart();
+                try {
+                    atachepart.attachFile(file.getAbsoluteFile());
+                    atachepart1.attachFile(fileAviz.getAbsoluteFile());
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                /**
                 mimeBodyPart = new MimeBodyPart();
                 DataSource source = new FileDataSource(fileDir + "/"+filename);
 
                 mimeBodyPart.setDataHandler(new DataHandler(source));
                 mimeBodyPart.setFileName(filename);
-                String contentType = URLConnection.guessContentTypeFromName(filename);
+                */
+                String contentType = URLConnection.guessContentTypeFromName(file.getName());
 
-                mimeBodyPart.setHeader("Content-Type", contentType + "; name=\"" + filename + "\"");
-                mimeBodyPart.setHeader("Content-Transfer-Encoding", "base64");
+                atachepart.setHeader("Content-Type", contentType + "; name=\"" + file.getName() + "\"");
+                atachepart.setHeader("Content-Transfer-Encoding", "base64");
+                multipart.addBodyPart(atachepart);
 
-                multipart.addBodyPart(mimeBodyPart);
+                String contentType1 = URLConnection.guessContentTypeFromName(fileAviz.getName());
+                atachepart1.setHeader("Content-Type", contentType1 + "; name=\"" + fileAviz.getName() + "\"");
+                atachepart1.setHeader("Content-Transfer-Encoding", "base64");
+                multipart.addBodyPart(atachepart1);
 
                 email.setContent(multipart);
                 /**
@@ -626,21 +1044,36 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 message1 = service.users().messages().send("me",message1).execute();
                 messageId=message1.getId();
 
-            }catch (MessagingException | FileNotFoundException me){
-                me.printStackTrace();
-            }catch (IOException io){
-                io.printStackTrace();
+            }catch (MessagingException | FileNotFoundException e){
+                Log.e(TAG,"A aparut o eroare ",e.getCause());
+                Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+            }catch (IOException e){
+                Log.e(TAG,"A aparut o eroare ",e.getCause());
+                Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
             } catch (UserRecoverableAuthException e) {
                 Intent intent = ((UserRecoverableAuthException)e).getIntent();
                 startActivityForResult(intent,
                         REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR);
               //e.printStackTrace();
             } catch (GoogleAuthException e) {
-                e.printStackTrace();
+                Log.e(TAG,"A aparut o eroare ",e.getCause());
+                Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
             }
 
             return null;
         }
+    }
+    public double douaZeci(double d)
+    {
+        BigDecimal bd = new BigDecimal(d);
+        bd=bd.setScale(2,BigDecimal.ROUND_HALF_UP);
+        return bd.doubleValue();
+    }
+    public double patruzeci(double d)
+    {
+        BigDecimal bd = new BigDecimal(d);
+        bd=bd.setScale(4,BigDecimal.ROUND_HALF_UP);
+        return bd.doubleValue();
     }
 
 

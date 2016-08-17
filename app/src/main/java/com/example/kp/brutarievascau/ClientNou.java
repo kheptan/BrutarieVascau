@@ -8,6 +8,7 @@ import android.util.Xml;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -61,6 +62,13 @@ public class ClientNou extends AppCompatActivity {
 
     public class XmlAsync extends AsyncTask<InputStream, Void, List<Client>> {
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            ProgressBar pb = (ProgressBar) findViewById(R.id.progresBarClienti);
+            pb.setVisibility(View.VISIBLE);
+        }
+
+        @Override
         protected List<Client> doInBackground(InputStream... params) {
             List<Client> allclient = new ArrayList<Client>();
             try {
@@ -73,9 +81,12 @@ public class ClientNou extends AppCompatActivity {
             return allclient;
         }
 
+
         @Override
         protected void onPostExecute(List<Client> clients) {
             super.onPostExecute(clients);
+            ProgressBar pb = (ProgressBar) findViewById(R.id.progresBarClienti);
+            pb.setVisibility(View.INVISIBLE);
             if(clients.size()>0){
                 DBhelper clientDB = new DBhelper(getBaseContext());
                 clientDB.openDB();
@@ -126,7 +137,18 @@ public class ClientNou extends AppCompatActivity {
                                 client.setCif(parser.getText());
                                 parser.nextTag();
                             }
-                        } else {
+                        }else if (subname.equals("reg_com")) {
+                            if (parser.next() == XmlPullParser.TEXT) {
+                                client.setNrReg(parser.getText());
+                                parser.nextTag();
+                            }
+                        }else if (subname.equals("adresa")) {
+                            if (parser.next() == XmlPullParser.TEXT) {
+                                client.setAdresa(parser.getText());
+                                parser.nextTag();
+                            }
+                        }
+                        else {
                             skip(parser);
                         }
                     }

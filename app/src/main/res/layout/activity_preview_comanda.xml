@@ -7,14 +7,16 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.kp.brutarievascau.PreviewComanda">
+    tools:context="com.example.kp.brutarievascau.PreviewComanda"
+    android:background="#f6e7ac">
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/listViewDetaliiComanda"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="50dp" />
+        android:layout_marginBottom="50dp"
+        android:paddingTop="10dp" />
 
     <Button
         android:layout_width="wrap_content"
@@ -23,7 +25,7 @@
         android:id="@+id/btnSendEmailCom"
         android:background="#99e772"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_toEndOf="@+id/progressBar" />
 
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"
@@ -34,5 +36,13 @@
         android:layout_alignBottom="@+id/listViewDetaliiComanda"
         android:layout_centerHorizontal="true"
         android:indeterminate="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Adauga Produs"
+        android:id="@+id/btnAddPreviewProdus"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

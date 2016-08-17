@@ -8,7 +8,8 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
 
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.kp.brutarievascau.EmailComanda">
+    tools:context="com.example.kp.brutarievascau.EmailComanda"
+    android:background="#f6e7ac">
 
     <EditText
         android:layout_width="wrap_content"
@@ -16,7 +17,7 @@
         android:id="@+id/editDatePickUpDialog"
         android:text="Introduceti Data"
         android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/btnSendAllMails" />
+        android:layout_centerHorizontal="true" />
 
     <ListView
         android:layout_width="wrap_content"
@@ -29,17 +30,19 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Cauta Comenzi"
-        android:id="@+id/button5"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/editDatePickUpDialog" />
+        android:text="Trimite Comenzile"
+        android:id="@+id/btnSendAllMails"
+        android:layout_below="@+id/editDatePickUpDialog"
+        android:layout_centerHorizontal="true" />
 
-    <Button
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Trimite Mail"
-        android:id="@+id/btnSendAllMails"
-        android:layout_alignEnd="@+id/listViewEmailComanda"
-        android:layout_below="@+id/editDatePickUpDialog" />
+        android:id="@+id/progressBarEmailComanda"
+        android:layout_alignTop="@+id/listViewEmailComanda"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="181dp"
+        android:indeterminate="true" />
 
 </RelativeLayout>

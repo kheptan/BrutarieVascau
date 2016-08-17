@@ -7,7 +7,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.kp.brutarievascau.Produse">
+    tools:context="com.example.kp.brutarievascau.Produse"
+    android:background="#f6e7ac">
 
 
     <Button
@@ -18,16 +19,7 @@
         android:background="#8ed851"
         android:onClick="ReplaceFragment"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="               Iesire             "
-        android:id="@+id/buttonExitProduse"
-        android:background="#df4b4b"
-        android:layout_alignTop="@+id/buttonAddProduse"
-        android:layout_alignParentEnd="true" />
+        android:layout_centerHorizontal="true" />
 
 
     <FrameLayout
@@ -44,8 +36,18 @@
         android:text="Importa"
         android:id="@+id/btnImportProduse"
         android:layout_above="@+id/buttonAddProduse"
-        android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/buttonAddProduse" />
+        android:layout_centerHorizontal="true" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progresBarProduse"
+        android:layout_below="@+id/AdaugaProduse"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="163dp"
+        android:indeterminate="true"
+        android:visibility="invisible" />
 
 
 </RelativeLayout>

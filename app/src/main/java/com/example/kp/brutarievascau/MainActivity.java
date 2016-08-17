@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         GoogleApiAvailability ga = GoogleApiAvailability.getInstance();
         ConnectionResult con = new ConnectionResult(ga.isGooglePlayServicesAvailable(getBaseContext()));
         if(con.isSuccess()) {
-            Toast.makeText(getBaseContext(), "pot acces play", Toast.LENGTH_LONG).show();
+            //Toast.makeText(getBaseContext(), "pot acces play", Toast.LENGTH_LONG).show();
         }
 
     }
