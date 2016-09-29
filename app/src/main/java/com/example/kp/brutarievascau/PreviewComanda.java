@@ -115,7 +115,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
      int NumarComanda;
      int IdClient;
 
-     final static String TO = "office@brutariavascau.ro";
+     final static String DESTINATAR = "office@brutariavascau.ro";
      //final static String TO = "dacian.capitan@rdsor.ro";
      final static String FROM = "me";
      final static String SUBJECT = "Comanda Email";
@@ -369,7 +369,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
 
             fileAviz = new File(createAvizFile(emailDate.getTime().getTime()));
 
-            new SendMail(TO,FROM,SUBJECT,BODYTEXT_ANTET+BODYTEXT).execute();
+            new SendMail(DESTINATAR,FROM,SUBJECT,BODYTEXT_ANTET+BODYTEXT).execute();
 
         } catch (XmlPullParserException e){
             Log.e(TAG,"A aparut o eroare ",e.getCause());
@@ -486,7 +486,6 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 }
                 return view;
     }
-
 
     /** Extinde ArrayAdapter pt generare Detaliile in ListView* *************************/
     public static class ArrayComanda extends ArrayAdapter<detaliiJoin> {
@@ -1063,6 +1062,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
             return null;
         }
     }
+
     public double douaZeci(double d)
     {
         BigDecimal bd = new BigDecimal(d);

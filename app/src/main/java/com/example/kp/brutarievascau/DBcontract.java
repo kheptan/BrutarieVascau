@@ -14,6 +14,7 @@ public class DBcontract {
      public final static  String  TABLE_MAGAZINE = "magazine";
      public final static  String  TABLE_USER = "user";
      public final static  String  TABLE_EMAIL_COMENZI = "email_comenzi";
+     public final static  String  TABLE_COMANDA_FINALA = "comanda_finala";
      // public key id //////////////////////////////////////////////////////////////
 
      public final static  String  KEY_ID = "_id";
@@ -50,6 +51,13 @@ public class DBcontract {
      public final static String KEY_EMAIL_COMENZI_NR_COMANDA = "nr_comanda";
      public final static String KEY_EMAIL_COMENZI_STARE_COMANDA = "stare_comanda";
      public final static String KEY_EMAIL_COMENZI_ID_CLIENT = "id_client";
+
+     // def. campuri comanda finala //
+     public final static String KEY_COMANDA_FINALA_DATA = "data_finala_total_comanda";
+     public final static String KEY_COMANDA_FINALA_DENUMIRE_PRODUS = "denumire_produs";
+     public final static String KEY_COMANDA_FINALA_COD_PRODUS = "cod_produs";
+     public final static String KEY_COMANDA_FINALA_CANTITATE = "cantitate";
+
      // def campuri magazin  ///////////////////////////////////////////////////////
 
      public final static String KEY_MAGAZINE_NUME = "nume";
@@ -115,6 +123,16 @@ public class DBcontract {
                           KEY_EMAIL_COMENZI_NR_COMANDA + " INTEGER, "+
                           KEY_EMAIL_COMENZI_ID_CLIENT + " INTEGER, "+
                           KEY_EMAIL_COMENZI_STARE_COMANDA + " INTEGER )";
+
+    public final static String CREATE_TABLE_COMANDA_FINALA =
+            "CREATE TABLE " +
+                    "IF NOT EXISTS " + TABLE_COMANDA_FINALA +
+                    " (" +
+                         KEY_ID + " INTEGER PRIMARY KEY ASC AUTOINCREMENT, " +
+                         KEY_COMANDA_FINALA_DATA + " INTEGER, "+
+                         KEY_COMANDA_FINALA_DENUMIRE_PRODUS + " TEXT, " +
+                         KEY_COMANDA_FINALA_COD_PRODUS + " TEXT, " +
+                         KEY_COMANDA_FINALA_CANTITATE + " INTEGER )";
 
 
     public final static String CREATE_TABLE_DETALII_COMANDA =

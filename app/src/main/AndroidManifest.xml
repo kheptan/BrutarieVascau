@@ -28,7 +28,9 @@
         <activity android:name=".ComandaNouaProdus" />
         <activity android:name=".Produse" />
         <activity android:name=".PreviewComanda" />
-        <activity android:name=".EmailComanda"></activity>
+        <activity android:name=".EmailComanda" />
+        <activity android:name=".FinalEmailComanda" />
+        <activity android:name=".PreviewFinal"></activity>
     </application>
 
 </manifest>

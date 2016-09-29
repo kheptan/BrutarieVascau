@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_final_email_comanda"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.kp.brutarievascau.FinalEmailComanda">
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="69dp"
+        android:id="@+id/spinnerAdapterProduseFinal" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_marginTop="59dp"
+        android:id="@+id/editCantitateFinala"
+        android:hint="Cantitate"
+        android:layout_below="@+id/spinnerAdapterProduseFinal"
+        android:layout_centerHorizontal="true"
+        android:inputType="numberSigned" />
+
+    <Button
+        android:text="Trimite Email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnSendFinalEmail"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="64dp"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:text="Vizualizare Comanda Totala"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnPreviewFinalComand"
+        android:layout_marginTop="42dp"
+        android:layout_below="@+id/btnAddFinalProdus"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:text="Adauga Produs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnAddFinalProdus"
+        android:layout_marginTop="39dp"
+        android:layout_below="@+id/editCantitateFinala"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBarFinal"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/editCantitateFinala"
+        android:layout_marginStart="56dp"
+        android:indeterminate="true" />
+
+</RelativeLayout>

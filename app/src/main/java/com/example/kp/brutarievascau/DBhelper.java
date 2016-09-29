@@ -63,6 +63,7 @@ public class DBhelper  {
                     sqldb.execSQL(DBcontract.CREATE_TABLE_DETALII_COMANDA);
                     sqldb.execSQL(DBcontract.CREATE_TABLE_USER);
                     sqldb.execSQL(DBcontract.CREATE_TABLE_EMAIL_COMENZI);
+                    sqldb.execSQL(DBcontract.CREATE_TABLE_COMANDA_FINALA);
 
                 } catch (SQLException se) {
                     Log.e("SQLite - getNewes", se.getMessage());
@@ -71,6 +72,7 @@ public class DBhelper  {
                     Log.e("SQLite - getNewes", se.getMessage());
                     Log.e("SQLite - getNewes", se.getMessage());
                     Log.e("SQLite - getNewes", se.getMessage());
+                    Log.e("err comanda finala", se.getMessage());
                 }
             }
             @Override
@@ -80,6 +82,7 @@ public class DBhelper  {
                 db.execSQL("DROP TABLE IF EXISTS " + DBcontract.TABLE_ANTET_COMANDA);
                 db.execSQL("DROP TABLE IF EXISTS " + DBcontract.TABLE_DETALII_COMANDA);
                 db.execSQL("DROP TABLE IF EXISTS " + DBcontract.TABLE_USER);
+                db.execSQL("DROP TABLE IF EXISTS " + DBcontract.TABLE_COMANDA_FINALA);
                 // create new tables
                 onCreate(db);
             }
@@ -193,6 +196,25 @@ public class DBhelper  {
                      }
     }
 
+    /**Adauga Comanda Finala */
+    public void addComandaFinala(ComandaFinala comFin){
+                     this.openDB();
+
+                     ContentValues val = new ContentValues();
+                     val.put(DBcontract.KEY_COMANDA_FINALA_DATA,comFin.getData());
+                     val.put(DBcontract.KEY_COMANDA_FINALA_COD_PRODUS,comFin.getCodProdus());
+                     val.put(DBcontract.KEY_COMANDA_FINALA_DENUMIRE_PRODUS,comFin.getDenumire());
+                     val.put(DBcontract.KEY_COMANDA_FINALA_CANTITATE,comFin.getCantitate());
+                     try{
+                         final long insertCF = this.localSqliteDB.insertOrThrow(DBcontract.TABLE_COMANDA_FINALA,null,val);
+                         Toast.makeText(localContext, " Produs adaugat cu succes!", Toast.LENGTH_SHORT).show();
+                     }catch (SQLException ex){
+                         Log.e("err insert comfinal",ex.getMessage());
+                     }
+                     this.closeDB();
+    }
+
+
     /**Adauga Email_Comenzi */
     public void insertEmailComanda(ComenziEmail comenziEmail){
                      this.openDB();
@@ -223,6 +245,41 @@ public class DBhelper  {
         return delCom;
 
     }
+
+    public int deleteFinalCOmanda(long delData, String delProdus){
+        this.openDB();
+        SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(delData);
+
+        String whereClause = "strftime('%d%m%Y', "+DBcontract.KEY_COMANDA_FINALA_DATA + "/1000,'unixepoch') =? and "+ DBcontract.KEY_COMANDA_FINALA_COD_PRODUS + " = '" + delProdus +"'";
+        String[] args_selection = { sd.format(calendar.getTime()) };
+        final int delelted = localSqliteDB.delete(DBcontract.TABLE_COMANDA_FINALA,whereClause,args_selection);
+        return delelted;
+
+    }
+
+    public int updateFinalPreview(long dataPreview,String CodPreview,String OldCodPreview,String DenumirePreview,int CantitatePreview){
+                    ContentValues value = new ContentValues();
+                    this.openDB();
+                    SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(dataPreview);
+
+                    String whereClause = "strftime('%d%m%Y', "+DBcontract.KEY_COMANDA_FINALA_DATA + "/1000,'unixepoch') =? and "+ DBcontract.KEY_COMANDA_FINALA_COD_PRODUS + " = '" + OldCodPreview +"'";
+                    String[] args_selection = { sd.format(calendar.getTime()) };
+
+                    value.put(DBcontract.KEY_COMANDA_FINALA_COD_PRODUS,CodPreview);
+                    value.put(DBcontract.KEY_COMANDA_FINALA_CANTITATE,CantitatePreview);
+                    value.put(DBcontract.KEY_COMANDA_FINALA_DENUMIRE_PRODUS,DenumirePreview);
+                    if(CantitatePreview>0) {
+                        return localSqliteDB.update(DBcontract.TABLE_COMANDA_FINALA, value, whereClause,args_selection);
+                                //new String[]{sd.format(calendar.getTime()), String.valueOf(CantitatePreview)});
+                    }else{
+                        return 0;
+                    }
+    }
+
     /** Update Lista Email */
     public void updateEmailList(long now){
                     SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
@@ -287,7 +344,31 @@ public class DBhelper  {
                     return list;
     }
 
+    public List<ComandaFinala> listAllFinalComenzi(long dataFinala){
+                    this.openDB();
+                    SimpleDateFormat sd = new SimpleDateFormat("ddLLy");
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(dataFinala);
 
+                    String[] pFields = {"_id","data_finala_total_comanda","denumire_produs","cod_produs","cantitate"};
+                    String whereClause = "strftime('%d%m%Y', "+DBcontract.TABLE_COMANDA_FINALA+ "." + DBcontract.KEY_COMANDA_FINALA_DATA + "/1000,'unixepoch') = ?";
+                    String[] args_selection = { sd.format(calendar.getTime()) };
+
+                    List<ComandaFinala> lista = new ArrayList<ComandaFinala>();
+                    Cursor cursor =  localSqliteDB.query(DBcontract.TABLE_COMANDA_FINALA,pFields,whereClause,args_selection,null,null,null);
+                    if(cursor.moveToFirst() || cursor.getCount()>0){
+                        do {
+                            ComandaFinala comFin = new ComandaFinala();
+                            comFin.setCodProdus(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_COMANDA_FINALA_COD_PRODUS)));
+                            comFin.setDenumire(cursor.getString(cursor.getColumnIndex(DBcontract.KEY_COMANDA_FINALA_DENUMIRE_PRODUS)));
+                            comFin.setData(cursor.getLong(cursor.getColumnIndex(DBcontract.KEY_COMANDA_FINALA_DATA)));
+                            comFin.setCantitate(cursor.getInt(cursor.getColumnIndex(DBcontract.KEY_COMANDA_FINALA_CANTITATE)));
+                            lista.add(comFin);
+                        }while(cursor.moveToNext());
+                    }
+                    cursor.close();
+                    return lista;
+    }
     /**
      *  Listeaza toate produsele */
     public List<CoduriProduse> listAllProducts(){
@@ -539,6 +620,7 @@ public class DBhelper  {
         String[] pFields = {"_id","nume"};
         String whereClause = "_id = ?";
         String[] args_selection = { String.valueOf(id) };
+
         this.openDB();
         Cursor cursor = localSqliteDB.query(DBcontract.TABLE_MAGAZINE,pFields,whereClause,args_selection,null,null,null);
 
@@ -555,10 +637,11 @@ public class DBhelper  {
      */
     public List<Client> listAllClients(){
                     String[] pFields = {"_id","nume","adresa","iban","nr_regcom","cif","info"};
-        this.openDB();
-
+                    this.openDB();
+                    String order_by = "magazine.nume ASC";
                     List<Client> mag = new ArrayList<Client>();
-                    Cursor cursor = localSqliteDB.query(DBcontract.TABLE_MAGAZINE,pFields,null,null,null,null,null,null);
+
+                    Cursor cursor = localSqliteDB.query(DBcontract.TABLE_MAGAZINE,pFields,null,null,null,null,order_by,null);
                     if (cursor.moveToFirst() || cursor.getCount()>0) {
                         do {
                             Client client = new Client();
@@ -589,6 +672,7 @@ public class DBhelper  {
                     localSqliteDB.delete(DBcontract.TABLE_MAGAZINE,DBcontract.KEY_ID+ " = ?",new String[] { String.valueOf(idclient)});
                     this.closeDB();
     }
+
 
 
     public int updatePreview(int nrcom,int linie,int cantitate,double pret,int codprodus){

@@ -98,7 +98,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
     String scope = "oauth2:https://www.googleapis.com/auth/gmail.send";
     Account acount;
     //final static String TO = "dacian.capitan@rdsor.ro";
-    final static String TO = "office@brutariavascau.ro";
+    final static String DESTINATAR = "office@brutariavascau.ro";
     final static String FROM = "me";
     final static String SUBJECT = "Email comanda :";
     final String BODYTEXT_ANTET = "Total Comanda : \n\r";
@@ -304,7 +304,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                      }
                     File AvizFile = new File(createAvizFile(calendar.getTime().getTime()));
                     fileLists.add(AvizFile);
-                    new SendMultipleMail(TO,FROM,SUBJECT,BODYTEXT_ANTET+BODYTEXT,fileLists).execute();
+                    new SendMultipleMail(DESTINATAR,FROM,SUBJECT,BODYTEXT_ANTET+BODYTEXT,fileLists).execute();
                     /**
                         String[] accountTypes = new String[]{"com.google"};
                         Intent intent = AccountPicker.newChooseAccountIntent(null, null,

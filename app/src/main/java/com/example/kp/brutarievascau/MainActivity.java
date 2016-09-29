@@ -64,6 +64,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void trimiteComandaFinala(View view){
+        Intent intent = new Intent(this,FinalEmailComanda.class);
+        startActivity(intent);
+    }
+
     public void iesireprogram(View view){
          finish();
     }
