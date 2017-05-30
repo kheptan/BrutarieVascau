@@ -116,7 +116,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
      int IdClient;
 
      final static String DESTINATAR = "office@brutariavascau.ro";
-     //final static String TO = "dacian.capitan@rdsor.ro";
+     //final static String DESTINATAR = "dacian.capitan@rdsor.ro";
      final static String FROM = "me";
      final static String SUBJECT = "Comanda Email";
      //final static String BODYTEXT = "weeeeeeeeeeeeeee";
@@ -234,7 +234,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                         sendmail();
 
             }else  {
-               //
+                Toast.makeText(getBaseContext(), "NU S-A PUTUT SELECTA UTILIZATOR EMAIL", Toast.LENGTH_LONG).show();
             }
         }else if (requestCode == REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR){
             Toast.makeText(getBaseContext(), "BAD REQUEST !!!", Toast.LENGTH_LONG).show();
@@ -1045,10 +1045,10 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
 
             }catch (MessagingException | FileNotFoundException e){
                 Log.e(TAG,"A aparut o eroare ",e.getCause());
-                Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
             }catch (IOException e){
                 Log.e(TAG,"A aparut o eroare ",e.getCause());
-                Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
             } catch (UserRecoverableAuthException e) {
                 Intent intent = ((UserRecoverableAuthException)e).getIntent();
                 startActivityForResult(intent,
@@ -1056,7 +1056,7 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
               //e.printStackTrace();
             } catch (GoogleAuthException e) {
                 Log.e(TAG,"A aparut o eroare ",e.getCause());
-                Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
             }
 
             return null;

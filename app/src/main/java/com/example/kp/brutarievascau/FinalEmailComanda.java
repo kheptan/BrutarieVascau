@@ -63,8 +63,8 @@ public class FinalEmailComanda extends AppCompatActivity implements AdapterView.
     String scope = "oauth2:https://www.googleapis.com/auth/gmail.send";
     public final static String TAG  = "ErrSendEmail";
     Account acount;
-    //final static String DESTINATAR = "dacian.capitan@rdsor.ro";
-    final static String DESTINATAR = "office@brutariavascau.ro";
+    final static String DESTINATAR = "dacian.capitan@rdsor.ro";
+    //final static String DESTINATAR = "office@brutariavascau.ro";
     final static String FROM = "me";
     final static String SUBJECT = "Email comanda :";
     final String BODYTEXT_ANTET = "Total Comanda : \n\r";

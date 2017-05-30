@@ -691,10 +691,16 @@ public class DBhelper  {
                    }
 
     }
-    public void deleteProdus(long idprodus){
+    public void deleteProdus(int idprodus){
                     localSqliteDB.delete(DBcontract.TABLE_PRODUSE,DBcontract.KEY_ID+ " = ?",new String[] { String.valueOf(idprodus)});
                     this.closeDB();
     }
+
+    public void deleteAllProdus(){
+                    localSqliteDB.delete(DBcontract.TABLE_PRODUSE,null,null);
+                    this.closeDB();
+    }
+
 
     public double douaZeci(double d)
     {

@@ -1,9 +1,12 @@
 package com.example.kp.brutarievascau;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -20,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -41,7 +45,9 @@ import java.util.List;
 
 
 public class Produse extends AppCompatActivity
-        implements FragmentSwitcher {
+        implements FragmentSwitcher,onDeleteProdus {
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +121,8 @@ public class Produse extends AppCompatActivity
             if(produse.size()>0){
                 DBhelper prDB = new DBhelper(getBaseContext());
                 prDB.openDB();
+                /**Verifica daca mai sint produse in database si sterge cele existente */
+                prDB.deleteAllProdus();
                 for(CoduriProduse item: produse){
                     prDB.addProdus(item);
                 }
@@ -202,7 +210,7 @@ public class Produse extends AppCompatActivity
     /**
      *  Fragment 1  Lista Produse
      * */
-    public static class TopProduse extends ListFragment implements CustomDialogFragment.DeleteDialogFragment {
+    public static class TopProduse extends ListFragment {
               ProduseAdaptor produseAdaptor;
               List<CoduriProduse> listaproduse;
               CoduriProduse obProduse;
@@ -211,7 +219,7 @@ public class Produse extends AppCompatActivity
               public void onActivityCreated(Bundle savedInstanceState) {
                    super.onActivityCreated(savedInstanceState);
 
-                   DBhelper dBhelper = new DBhelper(getActivity());
+                   final DBhelper dBhelper = new DBhelper(getActivity());
                    dBhelper.openDB();
                    listaproduse = dBhelper.listAllProducts();
                    produseAdaptor = new ProduseAdaptor(getActivity(),R.layout.produse_view_item,listaproduse);
@@ -223,7 +231,11 @@ public class Produse extends AppCompatActivity
                           @Override
                           public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                                 obProduse = (CoduriProduse) getListView().getItemAtPosition(position);
-                                dialogDelete(obProduse.getID());
+                                 DialogFragment df = DeleteDialogFragment.newInstance(obProduse.getID());
+                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                 df.show(ft, "DiagDelete");
+                                 //onDelProdusItem(obProduse.getID());
+
                                 return true;
                           }
                    });
@@ -242,21 +254,31 @@ public class Produse extends AppCompatActivity
 
              }
 
-             /**
-             * Implementeaza Interfata
-             * @param id
-             */
-             @Override
-             public void onDelProdusItem(long id) {
-                 Toast.makeText(getActivity(), "Sterg Produs - > " , Toast.LENGTH_SHORT).show();
-             }
 
-             public void dialogDelete(long idProd){
-                  FragmentManager fm = getActivity().getSupportFragmentManager();
-                  CustomDialogFragment cdf = CustomDialogFragment.newInstance(idProd);
-                  cdf.setTargetFragment(this,0);
-                  cdf.show(fm,"CasutaDialog");
-             }
+
+            public void doRefresh() {
+                DBhelper dBhelper = new DBhelper(getActivity());
+                dBhelper.openDB();
+                //Toast.makeText(getBaseContext(), "Sterg Produs - > ", Toast.LENGTH_SHORT).show();
+                listaproduse.clear();
+                listaproduse.addAll(dBhelper.listAllProducts());
+                //produseAdaptor = new ProduseAdaptor(getActivity(),R.layout.produse_view_item,listaproduse);
+                //setListAdapter(produseAdaptor);
+                produseAdaptor.notifyDataSetChanged();
+                dBhelper.closeDB();
+            }
+    }
+    @Override
+    public void onDelProdusItem(int idprod) {
+        DBhelper dBhelper = new DBhelper(getBaseContext());
+        dBhelper.openDB();
+        Toast.makeText(getBaseContext(), "Produsul s-a sters!!! ", Toast.LENGTH_SHORT).show();
+        dBhelper.deleteProdus(idprod);
+        TopProduse tproduse = (TopProduse) getSupportFragmentManager().findFragmentById(R.id.AdaugaProduse);
+        if(tproduse!=null){
+            tproduse.doRefresh();
+        }
+        dBhelper.closeDB();
     }
 
 
@@ -361,8 +383,60 @@ public class Produse extends AppCompatActivity
         return bd.doubleValue();
     }
 
-    /**
-     * Metoda din interior ListFragment pt OnLongClick
-     */
+    /** Fereastra Delete Dialog */
+    public static class DeleteDialogFragment extends DialogFragment {
+        int idprodus;
+        onDeleteProdus callback;
+
+        public DeleteDialogFragment() {
+        }
+
+        /** Retunreaza o noua fereastra cu argument*/
+        static DeleteDialogFragment newInstance(int idProdus){
+            DeleteDialogFragment f = new DeleteDialogFragment();
+            Bundle args = new Bundle();
+            args.putInt("IDPRODUS",idProdus);
+            f.setArguments(args);
+            return f;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            idprodus = getArguments().getInt("IDPRODUS");
+
+        }
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            return new android.app.AlertDialog.Builder(getActivity())
+                    .setTitle("Stergere Produs")
+                    .setMessage("Doriti sa stergeti acest produs din lista ?")
+                    .setPositiveButton("Sterge", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            callback.onDelProdusItem(idprodus);
+                        }
+                    })
+                    .setNegativeButton("Anuleaza", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    })
+                    .create();
+        }
+
+        @Override
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            try{
+                callback = (onDeleteProdus) activity;
+            }catch (ClassCastException ce){
+                throw new ClassCastException("Calling Fragment must implement onEditDelete Interface");
+            }
+        }
+    }
 
 }

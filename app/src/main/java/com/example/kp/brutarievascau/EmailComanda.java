@@ -97,7 +97,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
 
     String scope = "oauth2:https://www.googleapis.com/auth/gmail.send";
     Account acount;
-    //final static String TO = "dacian.capitan@rdsor.ro";
+    //final static String DESTINATAR = "capitandacian@gmail.com";
     final static String DESTINATAR = "office@brutariavascau.ro";
     final static String FROM = "me";
     final static String SUBJECT = "Email comanda :";
@@ -283,7 +283,9 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
 
                 }else{
                     lista.clear();
-                    listaaviz.clear();
+                    if(listaaviz!=null) {
+                        listaaviz.clear();
+                    }
 
                     fileLists.clear();
                     lista.addAll(dBhelper.listALlEmailComenzi(calendar.getTime().getTime()));
@@ -428,6 +430,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                                     }
                                 }
                                 //Toast.makeText(getBaseContext(), "client = " , Toast.LENGTH_SHORT).show();
+                                serializer.startTag(null, "Facturi");
                                 serializer.startTag(null, "Factura");
                                 serializer.startTag(null, "Antet");
                                 serializer.startTag(null,"FurnizorNume").text("S.C. ALEXPAN S.R.L").endTag(null, "FurnizorNume");
@@ -471,8 +474,8 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                                     serializer.startTag(null,"CodBare").endTag(null, "CodBare");
                                     serializer.startTag(null, "InformatiiSuplimentare").endTag(null, "InformatiiSuplimentare");
                                     serializer.startTag(null,"UM").text("BUC").endTag(null, "UM");
-                                    serializer.startTag(null,"Cantitate").text(""+linii.getCantitate()).endTag(null, "Cantitate");
-                                    serializer.startTag(null,"Pret").text(""+linii.getPret()).endTag(null, "Pret");
+                                    serializer.startTag(null,"Cantitate").text(""+linii.getCantitate()+".000").endTag(null, "Cantitate");
+                                    serializer.startTag(null,"Pret").text(""+linii.getPret()+"00").endTag(null, "Pret");
                                     serializer.startTag(null,"Valoare").text(""+linii.getValoare()).endTag(null, "Valoare");
                                     serializer.startTag(null,"ProcTVA").text("9").endTag(null, "ProcTVA");
                                     serializer.startTag(null,"TVA").text(""+linii.getTva()).endTag(null, "TVA");
@@ -500,6 +503,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                                 serializer.startTag(null,"ModalitatePlata").endTag(null,"ModalitatePlata");
                                 serializer.endTag(null,"Observatii");
                                 serializer.endTag(null, "Factura");
+                                serializer.endTag(null, "Facturi");
                                 serializer.endDocument();
 
                                 serializer.flush();
@@ -509,11 +513,11 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
 
                             } catch (IOException e) {
                                 //Log.e(TAG,"EROARE");
-                                Log.e(TAG,"A aparut o eroare ",e.getCause());
+                                Log.e(TAG,"A aparut o eroare la creare xml",e.getCause());
                                 Toast.makeText(getBaseContext(),"Eroare creare xml : "+e.getMessage(), Toast.LENGTH_LONG).show();
 
                             } catch (XmlPullParserException e){
-                                Log.e(TAG,"A aparut o eroare ",e.getCause());
+                                Log.e(TAG,"A aparut o eroare la xml",e.getCause());
                                 Toast.makeText(getBaseContext(),"Eroare creare xml : "+e.getMessage(), Toast.LENGTH_LONG).show();
                             }
                 }else {
@@ -617,16 +621,16 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
 
                           } catch  (IOException e) {
                               Log.e(TAG,"A aparut o eroare ",e.getCause());
-                              Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+                              //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
                           } catch (GoogleAuthException e) {
-                              Log.e(TAG,"A aparut o eroare ",e.getCause());
-                              Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+                              Log.e(TAG,"A aparut o eroare la autentificare gmail",e.getCause());
+                              //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
                           } catch (AddressException e) {
-                              Log.e(TAG,"A aparut o eroare ",e.getCause());
-                              Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+                              Log.e(TAG,"A aparut o eroare de adresa ",e.getCause());
+                              //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
                           } catch (MessagingException e) {
-                              Log.e(TAG,"A aparut o eroare ",e.getCause());
-                              Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+                              Log.e(TAG,"A aparut o eroare messageindex",e.getCause());
+                              //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
                           }
                           return null;
                         }
