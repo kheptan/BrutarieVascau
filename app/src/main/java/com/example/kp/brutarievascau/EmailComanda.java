@@ -474,8 +474,8 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                                     serializer.startTag(null,"CodBare").endTag(null, "CodBare");
                                     serializer.startTag(null, "InformatiiSuplimentare").endTag(null, "InformatiiSuplimentare");
                                     serializer.startTag(null,"UM").text("BUC").endTag(null, "UM");
-                                    serializer.startTag(null,"Cantitate").text(""+linii.getCantitate()+".000").endTag(null, "Cantitate");
-                                    serializer.startTag(null,"Pret").text(""+linii.getPret()+"00").endTag(null, "Pret");
+                                    serializer.startTag(null,"Cantitate").text(""+linii.getCantitate()).endTag(null, "Cantitate");
+                                    serializer.startTag(null,"Pret").text(""+linii.getPret()).endTag(null, "Pret");
                                     serializer.startTag(null,"Valoare").text(""+linii.getValoare()).endTag(null, "Valoare");
                                     serializer.startTag(null,"ProcTVA").text("9").endTag(null, "ProcTVA");
                                     serializer.startTag(null,"TVA").text(""+linii.getTva()).endTag(null, "TVA");

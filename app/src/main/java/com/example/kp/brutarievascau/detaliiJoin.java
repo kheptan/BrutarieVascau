@@ -27,9 +27,7 @@ public class detaliiJoin {
     public void setCantitate(int ca)   { this.cantitate = ca; }
     public void setPret(double pr)     { this.pret = pr; }
     public void setValoare(double vl)  { this.valoare = vl; }
-    public void setTva(double vtva){
-        this.tva = douaZeci(vtva);
-    }
+    public void setTva(double vtva)    { this.tva = vtva; }
     public void setCodProdus(String cprodus) { this.codProdus = cprodus;}
 
     public int getLinie()       { return this.linie; }
@@ -41,13 +39,6 @@ public class detaliiJoin {
     public double getValoare()  { return this.valoare; }
     public double getTva()      { return this.tva; }
     public String getCodProdus() { return this.codProdus; }
-
-    public double douaZeci(double d)
-    {
-        BigDecimal bd = new BigDecimal(d);
-        bd=bd.setScale(2,BigDecimal.ROUND_DOWN);
-        return bd.doubleValue();
-    }
 
 }
 

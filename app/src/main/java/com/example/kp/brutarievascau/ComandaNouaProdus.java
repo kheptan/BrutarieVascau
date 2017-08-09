@@ -279,7 +279,7 @@ public class ComandaNouaProdus extends AppCompatActivity  implements AdapterView
                               //Toast.makeText(getBaseContext(), " pret: " + pret, Toast.LENGTH_LONG).show();
                               //double tva = val * 0.09;
                               double pret = patruzeci(Double.parseDouble(pretF.getText().toString().trim()));
-                              double val = cant * pret;
+                              double val = patruzeci(cant * pret);
 
                               //valF.setText(String.valueOf(douaZeci(val)));
 
@@ -292,8 +292,8 @@ public class ComandaNouaProdus extends AppCompatActivity  implements AdapterView
                                       //detaliiObj.setCodProdus(codProdus);
                                       detaliiObj.setCantitate(cant);
                                       detaliiObj.setPret(pret);
-                                      detaliiObj.setValoare(douaZeci(val));
-                                      detaliiObj.setTva(detaliiObj.getValoare() * 0.09);
+                                      detaliiObj.setValoare(val);
+                                      detaliiObj.setTva(douaZeci(detaliiObj.getValoare() * 0.09));
 
                                       if (nrlinie > 1) {
                                           detaliiObj.setLinie(nrlinie);

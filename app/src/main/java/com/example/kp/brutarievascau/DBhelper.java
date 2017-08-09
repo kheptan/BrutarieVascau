@@ -678,7 +678,7 @@ public class DBhelper  {
     public int updatePreview(int nrcom,int linie,int cantitate,double pret,int codprodus){
                    if(nrcom!=0 || linie!=0 || cantitate>0 || codprodus!=0 || pret>0) {
                        ContentValues value = new ContentValues();
-                       double val = douaZeci(cantitate*pret);
+                       double val = patruzeci(cantitate*pret);
                        value.put(DBcontract.KEY_DETALII_COMANDA_CANTITATE, cantitate);
                        value.put(DBcontract.KEY_DETALII_COMANDA_PRET,pret);
                        value.put(DBcontract.KEY_DETALII_COMANDA_VALOARE,val);
