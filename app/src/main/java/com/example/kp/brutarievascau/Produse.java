@@ -1,11 +1,14 @@
 package com.example.kp.brutarievascau;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,6 +19,7 @@ import android.support.v4.app.ListFragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Xml;
 import android.view.LayoutInflater;
@@ -47,7 +51,7 @@ import java.util.List;
 public class Produse extends AppCompatActivity
         implements FragmentSwitcher,onDeleteProdus {
 
-
+    private static final int REQUEST_WRITE_STORAGE = 112;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +65,14 @@ public class Produse extends AppCompatActivity
             btnImport.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //insertProduse();
+
                     try {
-                        insertProduse();
+                        getPermision();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
                 }
             });
 
@@ -73,6 +80,30 @@ public class Produse extends AppCompatActivity
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.add(R.id.AdaugaProduse,top,"test123");
             fragmentTransaction.commit();
+    }
+
+    private void getPermision() throws IOException {
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_WRITE_STORAGE);
+        } else {
+            insertProduse();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_WRITE_STORAGE ) {
+            if (grantResults.length ==1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                try {
+                    insertProduse();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private void insertProduse() throws IOException {

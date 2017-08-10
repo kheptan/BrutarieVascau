@@ -1,7 +1,12 @@
 package com.example.kp.brutarievascau;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Xml;
@@ -24,6 +29,8 @@ import java.util.List;
 
 public class ClientNou extends AppCompatActivity {
 
+    private static final int REQUEST_WRITE_STORAGE = 112;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,13 +40,42 @@ public class ClientNou extends AppCompatActivity {
         btnInsertXml.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //try {
+                    //insertXmlClient();
+                try {
+                    getPermision();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                //} catch (IOException e) {
+                //    e.printStackTrace();
+                //}
+            }
+        });
+    }
+
+    private void getPermision() throws IOException {
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_WRITE_STORAGE);
+        }else{
+            insertXmlClient();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_WRITE_STORAGE ) {
+            if (grantResults.length ==1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 try {
                     insertXmlClient();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        });
+        }
     }
 
     private void insertXmlClient() throws IOException {
