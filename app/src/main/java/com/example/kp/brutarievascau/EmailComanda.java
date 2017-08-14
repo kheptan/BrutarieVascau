@@ -240,7 +240,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
 
                                 }
                             }else{
-                                Toast.makeText(getBaseContext(), "NU AVETI ACCES LA INTERNET!!!", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getBaseContext(), "NU AVETI ACCES LA INTERNET!!! ", Toast.LENGTH_LONG).show();
                                 return;
                             }
                         }
