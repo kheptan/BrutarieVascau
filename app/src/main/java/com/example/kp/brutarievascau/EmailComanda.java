@@ -1,5 +1,6 @@
 package com.example.kp.brutarievascau;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -9,13 +10,16 @@ import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -81,6 +85,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import static android.R.attr.data;
+
 public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOmanda,MyDialogInterface  {
 
     CustomEmailAdapter adapter;
@@ -103,6 +109,10 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
     final static String SUBJECT = "Email comanda :";
     final String BODYTEXT_ANTET = "Total Comanda : \n\r";
     String BODYTEXT="";
+
+    private static final int REQUEST_WRITE_STORAGE = 112;
+    private static final int REQUEST_GET_ACCOUNTS = 113;
+
 
 
     @Override
@@ -147,7 +157,14 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
 
                 Calendar calendar = Calendar.getInstance();
 
-                File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+                if (!hasPermission) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_WRITE_STORAGE);
+                }
+
+                /**File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 File[] filesToDelete;
                 if (Environment.getExternalStorageState()
                         .equals(Environment.MEDIA_MOUNTED)){
@@ -166,7 +183,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                        Toast.makeText(getBaseContext(),"Eroare stergere fisiere : "+e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                     //
-                }
+                }*/
 
                 DBhelper dBhelper = new DBhelper(getBaseContext());
                 lista = dBhelper.listALlEmailComenzi(calendar.getTime().getTime());
@@ -217,7 +234,10 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                             if(mobile !=null) {
                                 if (mobile.isConnected()) {
                                     /**sendmail();*/
-                                    pickacount();
+                                    //pickacount();
+
+                                    getEmailPermision();
+
                                 }
                             }else{
                                 Toast.makeText(getBaseContext(), "NU AVETI ACCES LA INTERNET!!!", Toast.LENGTH_LONG).show();
@@ -241,9 +261,72 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                 }
     }
 
+
+    public void delAllFiles() {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File[] filesToDelete;
+        if (Environment.getExternalStorageState()
+                .equals(Environment.MEDIA_MOUNTED)){
+
+            try {
+                filesToDelete = path.listFiles();
+                if(filesToDelete!=null && filesToDelete.length>1){
+                    for(File itemfile : filesToDelete){
+                        if(itemfile.getName().contains("F_17314580") || itemfile.getName().contains("Aviz") ){
+                            itemfile.delete();
+                        }
+                    }
+                }
+            } catch (Exception e){
+                Log.e(TAG,"A aparut o eroare la stergere fisier",e.getCause());
+                Toast.makeText(getBaseContext(),"Eroare stergere fisiere : "+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+            //
+        }
+    }
+
+
+    public void getEmailPermision()  {
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.GET_ACCOUNTS) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.GET_ACCOUNTS},REQUEST_GET_ACCOUNTS);
+        } else {
+            pickacount();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_WRITE_STORAGE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                        delAllFiles();
+
+                }
+                break;
+
+            case REQUEST_GET_ACCOUNTS:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    String[] accountTypes = new String[]{"com.google"};
+                    Intent intent = AccountPicker.newChooseAccountIntent(null, null,
+                            accountTypes, false, null, null, null, null);
+                    startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+
+                }else {
+                    Toast.makeText(getBaseContext(), "BAD REQUEST !!!", Toast.LENGTH_LONG).show();
+                }
+                break;
+
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-                //super.onActivityResult(requestCode, resultCode, data);
+                super.onActivityResult(requestCode, resultCode, data);
                 if(requestCode == REQUEST_CODE_PICK_ACCOUNT) {
                     if (resultCode == RESULT_OK) {
                         acount = new Account(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME),
