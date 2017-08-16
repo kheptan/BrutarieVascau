@@ -15,6 +15,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
@@ -102,7 +103,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
     static final int REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR = 1001;
 
     String scope = "oauth2:https://www.googleapis.com/auth/gmail.send";
-    Account acount;
+    public Account acount;
     //final static String DESTINATAR = "capitandacian@gmail.com";
     final static String DESTINATAR = "office@brutariavascau.ro";
     final static String FROM = "me";
@@ -238,6 +239,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
 
                                     getEmailPermision();
 
+
                                 }
                             }else{
                                 Toast.makeText(getBaseContext(), "NU AVETI ACCES LA INTERNET!!! ", Toast.LENGTH_LONG).show();
@@ -293,46 +295,48 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.GET_ACCOUNTS},REQUEST_GET_ACCOUNTS);
         } else {
-            pickacount();
+            Toast.makeText(getBaseContext(), "acuma ar trebui sa am account setat.", Toast.LENGTH_LONG).show();
+
         }
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case REQUEST_WRITE_STORAGE:
+            case REQUEST_WRITE_STORAGE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                        delAllFiles();
+                    //Toast.makeText(getBaseContext(), "BAD REQUEST !!!", Toast.LENGTH_LONG).show();
+                    delAllFiles();
 
                 }
-                break;
-
-            case REQUEST_GET_ACCOUNTS:
+                return;
+            }
+            case REQUEST_GET_ACCOUNTS: {
+                //Toast.makeText(getBaseContext(), "am ajuns ub get accounts", Toast.LENGTH_LONG).show();
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
                     String[] accountTypes = new String[]{"com.google"};
                     Intent intent = AccountPicker.newChooseAccountIntent(null, null,
                             accountTypes, false, null, null, null, null);
                     startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+                } else {
 
-                }else {
-                    Toast.makeText(getBaseContext(), "BAD REQUEST !!!", Toast.LENGTH_LONG).show();
                 }
-                break;
+                return;
+            }
 
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-                super.onActivityResult(requestCode, resultCode, data);
+                //super.onActivityResult(requestCode, resultCode, data);
                 if(requestCode == REQUEST_CODE_PICK_ACCOUNT) {
                     if (resultCode == RESULT_OK) {
                         acount = new Account(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME),
                                 data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
                                /**new SendMultipleMail(TO,FROM,SUBJECT,BODYTEXT_ANTET+BODYTEXT,fileLists).execute();*/
-
+                               Toast.makeText(getBaseContext(), acount.toString(), Toast.LENGTH_LONG).show();
                                sendmail();
                     }else  {
                         Toast.makeText(getBaseContext(), "BAD REQUEST !!!", Toast.LENGTH_LONG).show();
@@ -621,6 +625,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                 final List<File> importFileLists;
 
 
+
                 Calendar calendar = Calendar.getInstance();
                 /**Init Variables*/
                 String token;
@@ -704,23 +709,31 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
 
                           } catch  (IOException e) {
                               Log.e(TAG,"A aparut o eroare ",e.getCause());
+
                               //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
-                          } catch (GoogleAuthException e) {
-                              Log.e(TAG,"A aparut o eroare la autentificare gmail",e.getCause());
+                          } catch (UserRecoverableAuthException e) {
+
+                              Log.e(TAG,"A aparut o eroare la autentificare gmail",e);
+                              e.printStackTrace();
+                              startActivityForResult(e.getIntent(),REQUEST_CODE_PICK_ACCOUNT);
                               //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
                           } catch (AddressException e) {
+
                               Log.e(TAG,"A aparut o eroare de adresa ",e.getCause());
                               //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
                           } catch (MessagingException e) {
                               Log.e(TAG,"A aparut o eroare messageindex",e.getCause());
                               //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
+                          } catch (GoogleAuthException e) {
+                              e.printStackTrace();
                           }
-                          return null;
+                    return null;
                         }
 
                 @Override
                 protected void onPostExecute(Void aVoid) {
                     super.onPostExecute(aVoid);
+                    //Toast.makeText(getBaseContext(), token.toString(), Toast.LENGTH_LONG).show();
                     progressBar.setVisibility(View.INVISIBLE);
                     if(messageId!=null){
                         Toast.makeText(getBaseContext(), "Mail trimis cu succes !!!", Toast.LENGTH_SHORT).show();
