@@ -295,7 +295,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.GET_ACCOUNTS},REQUEST_GET_ACCOUNTS);
         } else {
-            Toast.makeText(getBaseContext(), "acuma ar trebui sa am account setat.", Toast.LENGTH_LONG).show();
+            pickacount();
 
         }
     }
@@ -336,7 +336,7 @@ public class EmailComanda extends AppCompatActivity implements onDeleteEmailCOma
                         acount = new Account(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME),
                                 data.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE));
                                /**new SendMultipleMail(TO,FROM,SUBJECT,BODYTEXT_ANTET+BODYTEXT,fileLists).execute();*/
-                               Toast.makeText(getBaseContext(), acount.toString(), Toast.LENGTH_LONG).show();
+                               //Toast.makeText(getBaseContext(), acount.toString(), Toast.LENGTH_LONG).show();
                                sendmail();
                     }else  {
                         Toast.makeText(getBaseContext(), "BAD REQUEST !!!", Toast.LENGTH_LONG).show();

@@ -1,5 +1,6 @@
 package com.example.kp.brutarievascau;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -8,14 +9,17 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -121,7 +125,8 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
      final static String SUBJECT = "Comanda Email";
      //final static String BODYTEXT = "weeeeeeeeeeeeeee";
 
-
+     private static final int REQUEST_WRITE_STORAGE = 112;
+     private static final int REQUEST_GET_ACCOUNTS = 113;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,7 +220,8 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                             if(mobile.isConnected()) {
                                 //Toast.makeText(getBaseContext(), "avem atitea elemente" + lstdetalii.size(), Toast.LENGTH_LONG).show();
                                 //sendmail();
-                                pickacount();
+                                //pickacount();
+                                getEmailPermision();
                             }
                         }else{
                             Toast.makeText(getBaseContext(), "NU AVETI ACCES LA INTERNET!!!", Toast.LENGTH_LONG).show();
@@ -223,6 +229,39 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                         }
                     }
                 });
+    }
+
+    public void getEmailPermision()  {
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.GET_ACCOUNTS) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.GET_ACCOUNTS},REQUEST_GET_ACCOUNTS);
+        } else {
+            pickacount();
+
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+
+            case REQUEST_GET_ACCOUNTS: {
+                //Toast.makeText(getBaseContext(), "am ajuns ub get accounts", Toast.LENGTH_LONG).show();
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    String[] accountTypes = new String[]{"com.google"};
+                    Intent intent = AccountPicker.newChooseAccountIntent(null, null,
+                            accountTypes, false, null, null, null, null);
+                    startActivityForResult(intent, REQUEST_CODE_PICK_ACCOUNT);
+                } else {
+
+                }
+                return;
+            }
+
+        }
     }
 
     @Override
@@ -1043,7 +1082,8 @@ public class PreviewComanda extends AppCompatActivity implements onEditDeleteDia
                 message1 = service.users().messages().send("me",message1).execute();
                 messageId=message1.getId();
 
-            }catch (MessagingException | FileNotFoundException e){
+            }
+            catch (MessagingException | FileNotFoundException e){
                 Log.e(TAG,"A aparut o eroare ",e.getCause());
                 //Toast.makeText(getBaseContext(),"Eroare trimitere mail : "+e.getMessage(), Toast.LENGTH_LONG).show();
             }catch (IOException e){
