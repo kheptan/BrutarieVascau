@@ -86,7 +86,7 @@ public class FinalEmailComanda extends AppCompatActivity implements AdapterView.
         /** data de azi */
         final Calendar calendar = Calendar.getInstance();
 
-        /**Creaza obiectul pt introducere produse */
+        /**Creaza obiectul pt introducere produse  */
         comfinal = new ComandaFinala();
         comfinal.setData(calendar.getTime().getTime());
 
